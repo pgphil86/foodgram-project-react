@@ -63,7 +63,7 @@ class Follow(models.Model):
     Model of subscription and editing it.
     '''
 
-    user = models.ForeignKey(
+    reader = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
         related_name='follower',
@@ -84,7 +84,7 @@ class Follow(models.Model):
             ),
             models.CheckConstraint(
                 name='It is impossible to subscribe to yourself.',
-                check=models.Q(author=models.F('user'))
+                check=models.Q(author=models.F('reader'))
             ),
         ]
         ordering = ('author',)
