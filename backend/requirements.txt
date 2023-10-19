@@ -1,0 +1,17 @@
+asgiref==3.7.2
+Django==3.2.12
+python-dotenv==0.19.2
+pytz==2023.3
+sqlparse==0.4.4
+typing_extensions==4.7.1
+pillow==10.0.0
+sorl-thumbnail==12.9.0
+djangorestframework==3.14.0
+django-filter==23.2
+djangorestframework-simplejwt==4.7.2
+djoser==2.1.0
+gunicorn==20.0.4
+psycopg2-binary==2.8.6
+webcolors==1.13
+django-extra-fields==3.0.2
+django-colorfield==0.9.0
