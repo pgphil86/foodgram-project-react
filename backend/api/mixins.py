@@ -5,7 +5,7 @@ class CreateAndDeleteViewSet(mixins.CreateModelMixin,
                              mixins.DestroyModelMixin,
                              viewsets.GenericViewSet):
     '''
-    Mixin for creating and deleting. 
+    Mixin for creating and deleting.
     '''
 
     pass

@@ -1,10 +1,10 @@
 from colorfield.fields import ColorField
 from django.conf import settings
-from django.core.validators import (MaxValueValidator, MinValueValidator, RegexValidator)
+from django.core.validators import (MaxValueValidator, MinValueValidator,
+                                    RegexValidator)
 from django.db import models
-
 from users.models import User
-        
+
 
 class Ingredient(models.Model):
     '''
@@ -34,7 +34,7 @@ class Ingredient(models.Model):
 
     def __str__(self):
         return f'{self.name}, {self.measurement_unit}'
-    
+
 
 class Tag(models.Model):
     '''
@@ -158,7 +158,7 @@ class IngredientInRecipe(models.Model):
 
     def __str__(self):
         return f'{self.amount} {self.ingredient} {self.recipe}'
-    
+
 
 class UserRecipeModel(models.Model):
     '''
@@ -178,7 +178,7 @@ class UserRecipeModel(models.Model):
 
     class Meta:
         abstract = True
-    
+
 
 class Favorite(UserRecipeModel):
     '''
@@ -187,8 +187,8 @@ class Favorite(UserRecipeModel):
 
     class Meta:
         default_related_name = 'favorite'
-        verbose_name='Favorite'
-        verbose_name_plural='Favorites'
+        verbose_name = 'Favorite'
+        verbose_name_plural = 'Favorites'
 
     def __str__(self):
         return f'{self.user.username} add {self.recipe.name}.'

@@ -1,18 +1,17 @@
 import os
-
 from pathlib import Path
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-#SECRET_KEY = 'django-insecure-p#z!m^!b($d!m=^a549-$yk#2t=-@^7ja+(q2h7*xr$$hw_k#+'
+# SECRET_KEY = 'django-insecure-p#z!m^!b($d!m=^a549-$yk#2t=-@^7ja+(q2h7*xr$$hw_k#+'
 
 DEBUG = True
 
-#ALLOWED_HOSTS = []
+# ALLOWED_HOSTS = []
 
 SECRET_KEY = os.getenv('SECRET_KEY', default='secret_key')
 
-#DEBUG = os.getenv('DEBUG', default=False) == 'True'
+# DEBUG = os.getenv('DEBUG', default=False) == 'True'
 
 ALLOWED_HOSTS = ['158.160.67.222', '127.0.0.1', 'localhost', 'tasks.viewdns.net']
 
@@ -117,7 +116,7 @@ REST_FRAMEWORK = {
     ],
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework.authentication.TokenAuthentication',
-   ],
+    ],
     'DEFAULT_FILTER_BACKENDS': (
         'django_filters.rest_framework.DjangoFilterBackend',
     ),

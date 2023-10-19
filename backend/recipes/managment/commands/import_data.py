@@ -1,13 +1,14 @@
-import os
 import json
+import os
+
 from django.conf import settings
 from django.core.management.base import BaseCommand
-
 from recipes.models import Ingredient
 
 
 def import_ingredient():
-    with open(os.path.join(settings.BASE_DIR, 'data', 'ingredients.json'), 'r', encoding='utf-8') as f:
+    with open(os.path.join(settings.BASE_DIR, 'data', 'ingredients.json'),
+              'r', encoding='utf-8') as f:
         data = json.load(f)
         for i in range(len(data)):
             Ingredient.objects.get_or_create(

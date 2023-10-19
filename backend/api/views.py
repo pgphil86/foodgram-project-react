@@ -1,24 +1,17 @@
+from api.filters import IngredientFilter
+from api.pagination import StandartPaginator
+from api.permissions import AdminOrReadOnly, AuthorOrReadOnly
+from api.serializers import (FavoriteSerializer, IngredientSerializer,
+                             RecipeCreateSerializer, RecipeListSerializer,
+                             ShoppingCartSerializer, TagSerializer)
 from django.db.models import F, Sum
 from django.shortcuts import HttpResponse, get_object_or_404
-from django_filters.rest_framework import DjangoFilterBackend
+from recipes.models import (Favorite, Ingredient, IngredientInRecipe, Recipe,
+                            ShoppingCart, Tag)
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
-from rest_framework.views import APIView
-
-from api.filters import IngredientFilter, RecipeFilter
-from api.mixins import ListViewSet
-from api.pagination import StandartPaginator
-from api.permissions import AuthorOrReadOnly, AdminOrReadOnly
-from api.serializers import (FavoriteSerializer, IngredientSerializer,
-                             RecipeListSerializer, RecipeCreateSerializer,
-                             ShoppingCartSerializer, SubscribeSerializer,
-                             TagSerializer, UserListSerializer)
-
-from recipes.models import (Favorite, Ingredient, IngredientInRecipe, Recipe,
-                            ShoppingCart, Tag)
-from users.models import Follow, User
 
 
 class TagViewSet(viewsets.ModelViewSet):
@@ -47,7 +40,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
     '''
     Viewset for watching recipes.
     '''
-    
+
     queryset = Recipe.objects.all()
     filter_backends = (AuthorOrReadOnly,)
     http_method_names = ['get', 'post', 'patch', 'delete']
@@ -57,7 +50,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
         if self.action in ('list', 'retrive'):
             return RecipeListSerializer
         return RecipeCreateSerializer
-    
+
     @action(detail=True, methods=['post', 'delete'],
             permission_classes=[IsAuthenticated])
     def favorite(self, request, **kwargs):
@@ -89,9 +82,11 @@ class RecipeViewSet(viewsets.ModelViewSet):
         Watching shopping cart.
         '''
 
-        items = IngredientInRecipe.objects.select_related('recipe', 'ingredient')
+        items = IngredientInRecipe.objects.select_related('recipe',
+                                                          'ingredient')
         items = items.filter(recipe__shopping_carts__user=request.user).all()
-        shopping_cart = items.values('ingredient__name', 'ingredient__measurement_unit').annotate(
+        shopping_cart = items.values('ingredient__name',
+                                     'ingredient__measurement_unit').annotate(
             name=F('ingredient__name'),
             units=F('ingredient__measurement_unit'),
             amount=Sum('amount')

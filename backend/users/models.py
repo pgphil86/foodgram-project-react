@@ -4,7 +4,6 @@ from django.core.validators import RegexValidator
 from django.db import models
 
 
-
 class User(AbstractUser):
     '''
     Model of user.

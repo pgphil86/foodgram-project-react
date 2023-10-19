@@ -1,13 +1,6 @@
 from django.contrib import admin
-
-from recipes.models import (
-    Favorite,
-    Ingredient,
-    IngredientInRecipe,
-    Recipe,
-    Tag,
-    ShoppingCart
-)
+from recipes.models import (Favorite, Ingredient, IngredientInRecipe, Recipe,
+                            ShoppingCart, Tag)
 
 
 @admin.register(Ingredient)
@@ -24,7 +17,7 @@ class RecipeAdmin(admin.ModelAdmin):
     @staticmethod
     def add_favorites(obj):
         return obj.favorites.count()
-    
+
 
 admin.site.register(Favorite)
 admin.site.register(IngredientInRecipe)
