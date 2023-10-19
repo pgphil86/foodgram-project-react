@@ -23,7 +23,7 @@ class CustomDjoserUsersGetSerializer(UserSerializer):
         request = self.context['request']
         if request is None or request.user.is_anonymous:
             return False
-        return Follow.objects.filter(reader=request.user,
+        return Follow.objects.filter(user=request.user,
                                      author=obj).exists()
 
 
@@ -60,7 +60,7 @@ class UserSerializer(serializers.ModelSerializer):
         request = self.context['request']
         if request.user.is_anonymous:
             return False
-        return Follow.objects.filter(reader=request.user, author=obj).exists()
+        return Follow.objects.filter(user=request.user, author=obj).exists()
 
     def get_recipes_count(self, obj):
         return obj.recipes.count()
@@ -275,17 +275,17 @@ class SubscribeSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Follow
-        fields = ('reader', 'author')
+        fields = ('user', 'author')
         validators = [
             UniqueTogetherValidator(
                 queryset=Follow.objects.all(),
-                fields=('reader', 'author'),
+                fields=('user', 'author'),
                 message='You already subscribe.'
             )
         ]
 
     def validate(self, data):
-        if data['reader'] == data['author']:
+        if data['user'] == data['author']:
             raise serializers.ValidationError(
                 'It is impossible to subscribe to yourself.'
             )
