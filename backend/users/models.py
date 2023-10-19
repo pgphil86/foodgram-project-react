@@ -84,7 +84,7 @@ class Follow(models.Model):
             ),
             models.CheckConstraint(
                 name='It is impossible to subscribe to yourself.',
-                check=~models.Q(author=models.F('reader'))
+                check=models.Q(author=models.F('user'))
             ),
         ]
         ordering = ('author',)
