@@ -23,7 +23,7 @@ class CustomDjoserUsersGetSerializer(UserSerializer):
         request = self.context['request']
         if request is None or request.user.is_anonymous:
             return False
-        return Follow.objects.filter(user=request.user,
+        return Follow.objects.filter(reader=request.user,
                                      author=obj).exists()
 
 
@@ -60,7 +60,7 @@ class UserSerializer(serializers.ModelSerializer):
         request = self.context['request']
         if request.user.is_anonymous:
             return False
-        return Follow.objects.filter(user=request.user, author=obj).exists()
+        return Follow.objects.filter(reader=request.user, author=obj).exists()
 
     def get_recipes_count(self, obj):
         return obj.recipes.count()
@@ -275,11 +275,11 @@ class SubscribeSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Follow
-        fields = ('user', 'author')
+        fields = ('reader', 'author')
         validators = [
             UniqueTogetherValidator(
                 queryset=Follow.objects.all(),
-                fields=('user', 'author'),
+                fields=('reader', 'author'),
                 message='You already subscribe.'
             )
         ]
@@ -344,3 +344,4 @@ class ShoppingCartSerializer(serializers.ModelSerializer):
         request = self.context['request']
         return FavoriteRecipeSerializer(instance.recipe,
                                         context={'request': request}).data
+Follow
