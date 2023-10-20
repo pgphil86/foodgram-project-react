@@ -344,4 +344,3 @@ class ShoppingCartSerializer(serializers.ModelSerializer):
         request = self.context['request']
         return FavoriteRecipeSerializer(instance.recipe,
                                         context={'request': request}).data
-Follow
