@@ -45,6 +45,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
     filter_backends = (AuthorOrReadOnly,)
     http_method_names = ['get', 'post', 'patch', 'delete']
     pagination_class = StandartPaginator
+    lookup_field = 'username'
 
     def get_serializer_class(self):
         if self.action in ('list', 'retrive'):
