@@ -44,7 +44,13 @@ class Tag(models.Model):
     color = ColorField(
         max_length=settings.SHORT_FIELD_LENGTH,
         unique=True,
-        verbose_name='Color'
+        verbose_name='Color',
+        validators=(
+            RegexValidator(
+                regex=r'^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$',
+                message='Need only HEX.'
+            ),
+        )
     )
     name = models.CharField(
         max_length=settings.SMALL_FIELD_LENGTH,
@@ -152,6 +158,12 @@ class IngredientInRecipe(models.Model):
     )
 
     class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=['recipe', 'ingredient'],
+                name="unique_ingredientinrecipe"
+            ),
+        ]
         verbose_name = 'Ingredient'
         verbose_name_plural = 'Ingredients'
         ordering = ('ingredient',)
@@ -160,33 +172,31 @@ class IngredientInRecipe(models.Model):
         return f'{self.amount} {self.ingredient} {self.recipe}'
 
 
-class UserRecipeModel(models.Model):
-    '''
-    Model of abstract recipe.
-    '''
-
-    user = models.ForeignKey(
-        User,
-        on_delete=models.CASCADE,
-        verbose_name='User'
-    )
-    recipe = models.ForeignKey(
-        Recipe,
-        on_delete=models.CASCADE,
-        verbose_name='Recipe'
-    )
-
-    class Meta:
-        abstract = True
-
-
-class Favorite(UserRecipeModel):
+class Favorite(models.Model):
     '''
     Model of work with favorite recipes.
     '''
 
+    recipe = models.ForeignKey(
+        Recipe,
+        on_delete=models.CASCADE,
+        related_name='favorites',
+        verbose_name='Recipe',
+    )
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='favorites',
+        verbose_name='User',
+    )
+
     class Meta:
-        default_related_name = 'favorite'
+        constraints = [
+            models.UniqueConstraint(
+                fields=['user', 'recipe'],
+                name='unique_favorite_recipe'
+            ),
+        ]
         verbose_name = 'Favorite'
         verbose_name_plural = 'Favorites'
 
@@ -194,13 +204,31 @@ class Favorite(UserRecipeModel):
         return f'{self.user.username} add {self.recipe.name}.'
 
 
-class ShoppingCart(UserRecipeModel):
+class ShoppingCart(models.Model):
     '''
     Model work with users shopping list.
     '''
 
+    recipe = models.ForeignKey(
+        Recipe,
+        on_delete=models.CASCADE,
+        related_name='shopping_list',
+        verbose_name='Recipe',
+    )
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='shopping_list',
+        verbose_name='User',
+    )
+
     class Meta:
-        default_related_name = 'shopping'
+        constraints = [
+            models.UniqueConstraint(
+                fields=['user', 'recipe'],
+                name="unique_shopping_list"
+            ),
+        ]
         verbose_name = 'Shopping list'
         verbose_name_plural = 'Shopping lists'
 
