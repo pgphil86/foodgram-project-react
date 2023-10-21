@@ -62,14 +62,24 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'foodgram_backend.wsgi.application'
 
+# DATABASES = {
+#    'default': {
+#        'ENGINE': 'django.db.backends.postgresql',
+#        'NAME': os.getenv('POSTGRES_DB', 'foodgram'),
+#        'USER': os.getenv('POSTGRES_USER', 'foodgram_user'),
+#        'PASSWORD': os.getenv('POSTGRES_PASSWORD', ''),
+#        'HOST': os.getenv('DB_HOST', ''),
+#        'DB_PORT': os.getenv('DB_PORT', '5432'),
+#    }
+# }
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': os.getenv('POSTGRES_DB', 'foodgram'),
-        'USER': os.getenv('POSTGRES_USER', 'foodgram_user'),
-        'PASSWORD': os.getenv('POSTGRES_PASSWORD', ''),
-        'HOST': os.getenv('DB_HOST', ''),
-        'PORT': os.getenv('DB_PORT', 5432)
+        'NAME': 'foodgram',
+        'USER': 'foodgram_user',
+        'PASSWORD': 'foodgram_password',
+        'HOST': '127.0.0.1',
+        'PORT': 5432,
     }
 }
 
