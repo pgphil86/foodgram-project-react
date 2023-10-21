@@ -1,19 +1,13 @@
 import base64
 from datetime import datetime
+
 from django.core.files.base import ContentFile
 from django.db import transaction
+from recipes.models import (Favorite, Ingredient, IngredientInRecipe, Recipe,
+                            ShoppingCart, Tag)
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 from rest_framework.generics import get_object_or_404
-
-from recipes.models import (
-    Tag,
-    Ingredient,
-    Recipe,
-    Favorite,
-    ShoppingCart,
-    IngredientInRecipe,
-)
 from users.models import Follow, User
 
 
@@ -94,7 +88,7 @@ class IngredientInRecipeSerializer(serializers.ModelSerializer):
                   'amount',
                   'measurement_unit',
                   'name')
-        
+
 
 class IngredientRecipeShortSerializer(serializers.ModelSerializer):
     id = serializers.PrimaryKeyRelatedField(required=True,
@@ -113,6 +107,8 @@ class LittleRecipeSerializer(serializers.ModelSerializer):
             'image',
             'cooking_time',
             'name')
+
+
 class SubscribeSerializer(serializers.ModelSerializer):
     is_subscribed = serializers.BooleanField(default=True)
     recipes = serializers.SerializerMethodField()
@@ -165,7 +161,7 @@ class SubscribeSerializer(serializers.ModelSerializer):
             author_id=self.initial_data['id'],
             user=self.context['request'].user)
         return subscribe.author
-    
+
 
 class RecipeSerializer(serializers.ModelSerializer):
     tags = TagSerializer(read_only=True, many=True)
@@ -239,7 +235,7 @@ class FavoriteSerializer(serializers.ModelSerializer):
             recipe_id=self.initial_data['id'],
             user=self.context['request'].user)
         return favorite.recipe
-    
+
 
 class ShoppingCartSerializer(serializers.ModelSerializer):
     name = serializers.CharField(read_only=True)
@@ -271,7 +267,7 @@ class ShoppingCartSerializer(serializers.ModelSerializer):
             recipe_id=self.initial_data['id'],
             user=self.context['request'].user)
         return shopping_list.recipe
-    
+
 
 class RecipeCreateSerializer(serializers.ModelSerializer):
     image = serializers.CharField(required=False)
@@ -349,7 +345,8 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
                 instance.image = self.convert_base64_to_image()
             instance.tags.set(self.validated_data['tags'])
             instance.save()
-            for ingredient in IngredientInRecipe.objects.filter(recipe=instance):
+            ingr = IngredientInRecipe.objects.filter(recipe=instance)
+            for ingredient in ingr:
                 ingredient.delete()
             ingredients = [IngredientInRecipe(
                 ingredient=item['id'],

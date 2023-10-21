@@ -1,28 +1,22 @@
 import io
+
+from api.filters import IngredientFilter, RecipeFilter
+from api.permissions import AuthorPermissions
+from api.serializers import (FavoriteSerializer, IngredientSerializer,
+                             RecipeCreateSerializer, RecipeSerializer,
+                             ShoppingCartSerializer, SubscribeSerializer,
+                             TagSerializer, UserPasswordSerializer,
+                             UserSerializer)
 from django.db.models import Q, Sum
 from django.http import HttpResponse
 from django_filters import rest_framework
 from djoser.views import TokenCreateView
+from recipes.models import Favorite, Ingredient, Recipe, ShoppingCart, Tag
 from rest_framework import permissions, status
 from rest_framework.decorators import action
 from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
-
-from api.filters import RecipeFilter, IngredientFilter
-from api.permissions import AuthorPermissions
-from api.serializers import (
-    UserSerializer,
-    UserPasswordSerializer,
-    TagSerializer,
-    IngredientSerializer,
-    SubscribeSerializer,
-    RecipeSerializer,
-    FavoriteSerializer,
-    ShoppingCartSerializer,
-    RecipeCreateSerializer,
-)
-from recipes.models import Ingredient, Favorite, Recipe, ShoppingCart, Tag
 from users.models import Follow, User
 
 
@@ -110,7 +104,7 @@ class RecipeViewSet(ModelViewSet):
                                    AuthorPermissions,)
         self.check_permissions(request)
         serializer = RecipeCreateSerializer(data=request.data,
-                                                context={'request': request})
+                                            context={'request': request})
         serializer.is_valid(raise_exception=True)
         recipe = serializer.save()
         return Response(RecipeSerializer(
@@ -124,7 +118,7 @@ class RecipeViewSet(ModelViewSet):
         obj = get_object_or_404(Recipe, pk=pk)
         self.check_object_permissions(request, obj)
         serializer = RecipeCreateSerializer(obj, data=request.data,
-                                                context={'request': request})
+                                            context={'request': request})
         serializer.is_valid(raise_exception=True)
         recipe = serializer.save()
         return Response(
