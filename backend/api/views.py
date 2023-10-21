@@ -1,6 +1,6 @@
 from api.filters import IngredientFilter
 from api.pagination import StandartPaginator
-from api.permissions import AdminOrReadOnly # AuthorOrReadOnly
+from api.permissions import AdminOrReadOnly
 from api.serializers import (FavoriteSerializer, IngredientSerializer,
                              RecipeCreateSerializer, RecipeListSerializer,
                              ShoppingCartSerializer, TagSerializer)
