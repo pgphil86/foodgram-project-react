@@ -1,5 +1,6 @@
 import json
 import os
+import sys
 
 from django.conf import settings
 from django.core.management.base import BaseCommand
@@ -22,3 +23,6 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         import_ingredient()
+
+
+sys.path.append(os.path.dirname(__file__))
