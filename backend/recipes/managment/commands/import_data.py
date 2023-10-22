@@ -7,7 +7,7 @@ from django.core.management.base import BaseCommand
 from recipes.models import Ingredient
 
 
-def import_ingredient():
+def import_data():
     with open(os.path.join(settings.BASE_DIR, 'data', 'ingredients.json'),
               'r', encoding='utf-8') as f:
         data = json.load(f)
@@ -22,7 +22,7 @@ def import_ingredient():
 class Command(BaseCommand):
 
     def handle(self, *args, **options):
-        import_ingredient()
+        import_data()
 
 
 sys.path.append(os.path.dirname(__file__))
