@@ -32,7 +32,7 @@ class RecipeFilter(FilterSet):
 
 class IngredientFilter(SearchFilter):
     search_param = 'name'
-    
+
     class Meta:
         model = Ingredient
         fields = ('name',)
