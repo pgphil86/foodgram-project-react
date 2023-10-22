@@ -5,7 +5,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = os.getenv('SECRET_KEY', default='secret_key')
 
-DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = ['158.160.67.222', '127.0.0.1:8080', 'localhost', 'food.viewdns.net']
 
