@@ -13,7 +13,7 @@ SECRET_KEY = os.getenv('SECRET_KEY', default='secret_key')
 
 # DEBUG = os.getenv('DEBUG', default=False) == 'True'
 
-ALLOWED_HOSTS = ['158.160.67.222', '127.0.0.1:8000', 'localhost', 'food.viewdns.net']
+ALLOWED_HOSTS = ['158.160.67.222', '127.0.0.1', 'localhost', 'food.viewdns.net']
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -78,7 +78,8 @@ DATABASES = {
         'NAME': 'foodgram',
         'USER': 'foodgram_user',
         'PASSWORD': 'foodgram_password',
-        'HOST': 'db',
+#        'HOST': 'db',
+        'HOST': 'food.viewdns.net',
         'PORT': 5432,
     }
 }
