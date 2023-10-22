@@ -41,4 +41,4 @@ services:
       - static:/staticfiles
       - media:/app/media/
     ports:
-      - 80:80
+      - 8080:80
