@@ -1,5 +1,9 @@
 FROM python:3.9
 
+RUN pip install --upgrade pip
+
+RUN pip install gunicorn
+
 WORKDIR /app
 
 COPY requirements.txt .
