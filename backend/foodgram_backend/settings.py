@@ -72,7 +72,7 @@ DATABASES = {
         'DB_PORT': os.getenv('DB_PORT', '5432'),
     }
 }
-#DATABASES = {
+# DATABASES = {
 #    'default': {
 #        'ENGINE': 'django.db.backends.postgresql',
 #        'NAME': 'foodgram',
