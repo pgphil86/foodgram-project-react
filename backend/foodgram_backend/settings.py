@@ -78,7 +78,6 @@ DATABASES = {
         'NAME': 'foodgram',
         'USER': 'foodgram_user',
         'PASSWORD': 'foodgram_password',
-#        'HOST': 'db',
         'HOST': 'food.viewdns.net',
         'PORT': 5432,
     }
