@@ -1,6 +1,5 @@
-import json
+import csv
 import os
-import sys
 
 from django.conf import settings
 from django.core.management.base import BaseCommand
@@ -8,21 +7,18 @@ from recipes.models import Ingredient
 
 
 def import_data():
-    with open(os.path.join(settings.BASE_DIR, 'data', 'ingredients.json'),
-              'r', encoding='utf-8') as f:
-        data = json.load(f)
-        for i in range(len(data)):
+    with open('./data/ingredients.csv',
+              encoding='utf-8') as csv_file:
+        fieldnames = ['name', 'measurement_unit']
+        csv_reader = csv.DictReader(csv_file, fieldnames=fieldnames)
+        for row in csv_reader:
             Ingredient.objects.get_or_create(
-                name=data[i].get('name'),
-                measurement_unit=data[i].get('measurement_unit')
-            )
-    print('Information from ingredients json-file downloaded.')
+                name=row['name'],
+                measurement_unit=row['measurement_unit'])
 
 
 class Command(BaseCommand):
 
     def handle(self, *args, **options):
         import_data()
-
-
-sys.path.append(os.path.dirname(__file__))
+    print('Information from ingredients json-file downloaded.')

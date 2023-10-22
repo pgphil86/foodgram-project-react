@@ -161,7 +161,7 @@ class IngredientInRecipe(models.Model):
         constraints = [
             models.UniqueConstraint(
                 fields=['recipe', 'ingredient'],
-                name="unique_ingredientinrecipe"
+                name='unique_ingredientinrecipe'
             ),
         ]
         verbose_name = 'Ingredient'
