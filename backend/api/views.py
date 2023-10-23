@@ -99,25 +99,25 @@ class RecipeViewSet(ModelViewSet):
     filter_backends = (rest_framework.DjangoFilterBackend,)
     filterset_class = RecipeFilter
 
-    def perform_create(self, serializer):
-        serializer.save(author=self.request.user)
+#    def perform_create(self, serializer):
+#        serializer.save(author=self.request.user)
 
-    def get_serializer_class(self):
-        if self.request.method == 'GET':
-            return RecipeSerializer
-        return RecipeCreateSerializer
+#    def get_serializer_class(self):
+#        if self.request.method == 'GET':
+#            return RecipeSerializer
+#        return RecipeCreateSerializer
 
-#    def create(self, request):
-#        self.permission_classes = (permissions.IsAuthenticated,
-#                                   AuthorPermissions,)
-#        self.check_permissions(request)
-#        serializer = RecipeCreateSerializer(data=request.data,
-#                                            context={'request': request})
-#        serializer.is_valid(raise_exception=True)
-#        recipe = serializer.save()
-#        return Response(RecipeSerializer(
-#            recipe, context={'request': request}
-#        ).data, status=status.HTTP_201_CREATED)
+    def create(self, request):
+        self.permission_classes = (permissions.IsAuthenticated,
+                                   AuthorPermissions,)
+        self.check_permissions(request)
+        serializer = RecipeCreateSerializer(data=request.data,
+                                            context={'request': request})
+        serializer.is_valid(raise_exception=True)
+        recipe = serializer.save()
+        return Response(RecipeSerializer(
+            recipe, context={'request': request}
+        ).data, status=status.HTTP_201_CREATED)
 
     def update(self, request, pk, *args, **kwargs):
         self.permission_classes = (permissions.IsAuthenticated,
