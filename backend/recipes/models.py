@@ -17,7 +17,6 @@ class Ingredient(models.Model):
     )
     name = models.CharField(
         max_length=settings.TITLE_LENGTH,
-        unique=True,
         verbose_name='Name of ingredient',
     )
 
