@@ -115,10 +115,9 @@ class Recipe(models.Model):
         auto_now_add=True,
         verbose_name='Publications date'
     )
-    tags = models.ForeignKey(
+    tags = models.ManyToManyField(
         Tag,
-        verbose_name='Tags',
-        on_delete=models.CASCADE
+        verbose_name='Tags'
     )
     text = models.TextField(
         verbose_name='Description',
