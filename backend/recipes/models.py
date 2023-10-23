@@ -20,12 +20,6 @@ class Ingredient(models.Model):
     )
 
     class Meta:
-#        constraints = [
-#            models.UniqueConstraint(
-#                fields=('name', 'measurement_unit',),
-#                name='unique_ingredient'
-#            )
-#        ]
         ordering = ('name',)
         verbose_name = 'Ingredient',
         verbose_name_plural = 'Ingredients'
@@ -100,10 +94,11 @@ class Recipe(models.Model):
     name = models.CharField(
         max_length=200,
         verbose_name='Name of dish',
+    )
 #        validators=[RegexValidator(
 #            regex=REGEX,
 #            message='There are no letters in the name.')]
-    )
+
     pub_date = models.DateTimeField(
         auto_now_add=True,
         verbose_name='Publications date'
