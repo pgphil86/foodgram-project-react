@@ -11,31 +11,31 @@ class User(AbstractUser):
     REGEX = r'^[\w.@+-]+\Z'
 
     email = models.EmailField(
-        max_length=settings.EMAIL_LENGTH,
+        max_length=254,
         unique=True,
         blank=False,
         null=False,
         verbose_name='Email'
     )
     first_name = models.CharField(
-        max_length=settings.FIELD_LENGTH,
+        max_length=150,
         blank=True,
         verbose_name='Name'
     )
     last_name = models.CharField(
-        max_length=settings.FIELD_LENGTH,
+        max_length=150,
         blank=True,
         verbose_name='Surname'
     )
     password = models.CharField(
-        max_length=settings.FIELD_LENGTH,
+        max_length=150,
         unique=True,
         blank=False,
         null=False,
         verbose_name='Password'
     )
     username = models.CharField(
-        max_length=settings.FIELD_LENGTH,
+        max_length=150,
         unique=True,
         blank=False,
         null=False,

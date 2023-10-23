@@ -12,11 +12,11 @@ class Ingredient(models.Model):
     '''
 
     measurement_unit = models.CharField(
-        max_length=settings.SHORT_FIELD_LENGTH,
+        max_length=200,
         verbose_name='Measurement unit',
     )
     name = models.CharField(
-        max_length=settings.TITLE_LENGTH,
+        max_length=200,
         verbose_name='Name of ingredient',
     )
 
@@ -41,7 +41,7 @@ class Tag(models.Model):
     '''
 
     color = ColorField(
-        max_length=settings.SHORT_FIELD_LENGTH,
+        max_length=7,
         unique=True,
         verbose_name='Color',
         validators=(
@@ -52,14 +52,14 @@ class Tag(models.Model):
         )
     )
     name = models.CharField(
-        max_length=settings.SMALL_FIELD_LENGTH,
+        max_length=200,
         unique=True,
         blank=False,
         null=False,
         verbose_name='Name of tag'
     )
     slug = models.SlugField(
-        max_length=settings.SHORT_FIELD_LENGTH,
+        max_length=200,
         unique=True,
         verbose_name='Slug'
     )
@@ -88,8 +88,8 @@ class Recipe(models.Model):
     cooking_time = models.PositiveSmallIntegerField(
         verbose_name='Cooking time',
         default=1,
-        validators=(MinValueValidator(settings.MIN_COOKING_TIME),
-                    MaxValueValidator(settings.MAX_COOKING_TIME))
+        validators=(MinValueValidator(1),
+                    MaxValueValidator(360))
     )
     image = models.ImageField(
         verbose_name='Image',
@@ -102,7 +102,7 @@ class Recipe(models.Model):
         verbose_name='Ingredients'
     )
     name = models.CharField(
-        max_length=settings.TITLE_LENGTH,
+        max_length=200,
         null=False,
         blank=False,
         verbose_name='Name of dish',
@@ -140,8 +140,8 @@ class IngredientInRecipe(models.Model):
 
     amount = models.PositiveSmallIntegerField(
         default=0,
-        validators=((MinValueValidator(settings.MIN_QUANTITY),
-                    MaxValueValidator(settings.MAX_QUANTITY))),
+        validators=((MinValueValidator(0),
+                    MaxValueValidator(1000))),
         verbose_name='Ingredient quantity'
     )
     ingredient = models.ForeignKey(
