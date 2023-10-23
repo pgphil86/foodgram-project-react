@@ -99,6 +99,14 @@ class RecipeViewSet(ModelViewSet):
     filter_backends = (rest_framework.DjangoFilterBackend,)
     filterset_class = RecipeFilter
 
+    def perform_create(self, serializer):
+        serializer.save(author=self.request.user)
+
+    def get_serializer_class(self):
+        if self.request.method == 'GET':
+            return RecipeSerializer
+        return RecipeCreateSerializer
+
 #    def create(self, request):
 #        self.permission_classes = (permissions.IsAuthenticated,
 #                                   AuthorPermissions,)
