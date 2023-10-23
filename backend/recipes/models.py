@@ -126,8 +126,8 @@ class IngredientInRecipe(models.Model):
     '''
 
     amount = models.PositiveSmallIntegerField(
-        validators=[(MinValueValidator(0),
-                    MaxValueValidator(3000))],
+        validators=((MinValueValidator(0),
+                    MaxValueValidator(3000))),
         verbose_name='Ingredient quantity'
     )
     ingredient = models.ForeignKey(
