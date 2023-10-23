@@ -20,12 +20,12 @@ class Ingredient(models.Model):
     )
 
     class Meta:
-        constraints = [
-            models.UniqueConstraint(
-                fields=('name', 'measurement_unit',),
-                name='unique_ingredient'
-            )
-        ]
+#        constraints = [
+#            models.UniqueConstraint(
+#                fields=('name', 'measurement_unit',),
+#                name='unique_ingredient'
+#            )
+#        ]
         ordering = ('name',)
         verbose_name = 'Ingredient',
         verbose_name_plural = 'Ingredients'
@@ -53,8 +53,6 @@ class Tag(models.Model):
     name = models.CharField(
         max_length=200,
         unique=True,
-        blank=False,
-        null=False,
         verbose_name='Name of tag'
     )
     slug = models.SlugField(
@@ -86,28 +84,25 @@ class Recipe(models.Model):
     )
     cooking_time = models.PositiveSmallIntegerField(
         verbose_name='Cooking time',
-        default=1,
         validators=(MinValueValidator(1),
                     MaxValueValidator(360))
     )
     image = models.ImageField(
         verbose_name='Image',
-        upload_to='recipes/media',
-        blank=False
+        upload_to='recipes/media'
     )
     ingredients = models.ManyToManyField(
         Ingredient,
         through='IngredientInRecipe',
+        through_fields=('recipe', 'ingredient'),
         verbose_name='Ingredients'
     )
     name = models.CharField(
         max_length=200,
-        null=False,
-        blank=False,
         verbose_name='Name of dish',
-        validators=[RegexValidator(
-            regex=REGEX,
-            message='There are no letters in the name.')]
+#        validators=[RegexValidator(
+#            regex=REGEX,
+#            message='There are no letters in the name.')]
     )
     pub_date = models.DateTimeField(
         auto_now_add=True,
@@ -118,9 +113,7 @@ class Recipe(models.Model):
         verbose_name='Tags'
     )
     text = models.TextField(
-        verbose_name='Description',
-        blank=False,
-        null=False
+        verbose_name='Description'
     )
 
     class Meta:
@@ -138,9 +131,8 @@ class IngredientInRecipe(models.Model):
     '''
 
     amount = models.PositiveSmallIntegerField(
-        default=0,
-        validators=((MinValueValidator(0),
-                    MaxValueValidator(1000))),
+        validators=[(MinValueValidator(0),
+                    MaxValueValidator(3000))],
         verbose_name='Ingredient quantity'
     )
     ingredient = models.ForeignKey(
@@ -223,7 +215,7 @@ class ShoppingCart(models.Model):
         constraints = [
             models.UniqueConstraint(
                 fields=['user', 'recipe'],
-                name="unique_shopping_list"
+                name='unique_shopping_list'
             ),
         ]
         verbose_name = 'Shopping list'
