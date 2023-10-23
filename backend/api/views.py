@@ -99,17 +99,17 @@ class RecipeViewSet(ModelViewSet):
     filter_backends = (rest_framework.DjangoFilterBackend,)
     filterset_class = RecipeFilter
 
-    def create(self, request):
-        self.permission_classes = (permissions.IsAuthenticated,
-                                   AuthorPermissions,)
-        self.check_permissions(request)
-        serializer = RecipeCreateSerializer(data=request.data,
-                                            context={'request': request})
-        serializer.is_valid(raise_exception=True)
-        recipe = serializer.save()
-        return Response(RecipeSerializer(
-            recipe, context={'request': request}
-        ).data, status=status.HTTP_201_CREATED)
+#    def create(self, request):
+#        self.permission_classes = (permissions.IsAuthenticated,
+#                                   AuthorPermissions,)
+#        self.check_permissions(request)
+#        serializer = RecipeCreateSerializer(data=request.data,
+#                                            context={'request': request})
+#        serializer.is_valid(raise_exception=True)
+#        recipe = serializer.save()
+#        return Response(RecipeSerializer(
+#            recipe, context={'request': request}
+#        ).data, status=status.HTTP_201_CREATED)
 
     def update(self, request, pk, *args, **kwargs):
         self.permission_classes = (permissions.IsAuthenticated,
@@ -186,7 +186,7 @@ class RecipeViewSet(ModelViewSet):
         text = io.BytesIO()
         with io.TextIOWrapper(text, encoding="utf-8", write_through=True) as f:
             f.write(list)
-            response = HttpResponse(text.getvalue(), content_type="text/plain")
+            response = HttpResponse(text.getvalue(), content_type='text/plain')
             response[
                 "Content-Disposition"
             ] = "attachment; filename=shopping_cart.txt"
