@@ -66,16 +66,6 @@ DATABASES = {
         'DB_PORT': os.getenv('DB_PORT', '5432'),
     }
 }
-# DATABASES = {
-#    'default': {
-#        'ENGINE': 'django.db.backends.postgresql',
-#        'NAME': 'foodgram',
-#        'USER': 'foodgram_user',
-#        'PASSWORD': 'foodgram_password',
-#        'HOST': 'localhost',
-#        'PORT': 5432,
-#    }
-# }
 
 AUTH_PASSWORD_VALIDATORS = [
     {

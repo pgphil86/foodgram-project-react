@@ -10,7 +10,6 @@ from api.serializers import (FavoriteSerializer, IngredientSerializer,
 from django.db.models import Q, Sum
 from django.http import HttpResponse
 from django_filters import rest_framework
-from djoser.views import TokenCreateView
 from recipes.models import Favorite, Ingredient, Recipe, ShoppingCart, Tag
 from rest_framework import permissions, status
 from rest_framework.decorators import action
@@ -71,14 +70,6 @@ class UserViewSet(ModelViewSet):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
-class CustomTokenCreateView(TokenCreateView):
-    def post(self, request, *args, **kwargs):
-        response = super().post(request, *args, **kwargs)
-        if response.status_code == 200:
-            response.status_code = 201
-        return response
-
-
 class TagViewSet(ModelViewSet):
     queryset = Tag.objects.all()
     serializer_class = TagSerializer
@@ -98,14 +89,6 @@ class RecipeViewSet(ModelViewSet):
     serializer_class = RecipeSerializer
     filter_backends = (rest_framework.DjangoFilterBackend,)
     filterset_class = RecipeFilter
-
-#    def perform_create(self, serializer):
-#        serializer.save(author=self.request.user)
-
-#    def get_serializer_class(self):
-#        if self.request.method == 'GET':
-#            return RecipeSerializer
-#        return RecipeCreateSerializer
 
     def create(self, request):
         self.permission_classes = (permissions.IsAuthenticated,
@@ -175,7 +158,7 @@ class RecipeViewSet(ModelViewSet):
     def download_shopping_cart(self, request):
         recipes_id = ShoppingCart.objects.filter(
             user=request.user).values_list('recipe__pk', flat=True)
-        amts = Recipe.objects.filter(
+        amounts = Recipe.objects.filter(
             id__in=recipes_id
         ).annotate(
             quantity=Sum(
@@ -189,13 +172,11 @@ class RecipeViewSet(ModelViewSet):
             'link_of_ingredients__ingredient__measurement_unit'
         )
         list = ''
-        for i in range(len(amts)):
-            list += f'{amts[i][1]} ({amts[i][2]}) -- {amts[i][0]}\n'
+        for i in range(len(amounts)):
+            list += f'{amounts[i][1]} ({amounts[i][2]}) -- {amounts[i][0]}\n'
         text = io.BytesIO()
         with io.TextIOWrapper(text, encoding="utf-8", write_through=True) as f:
             f.write(list)
             response = HttpResponse(text.getvalue(), content_type='text/plain')
-            response[
-                "Content-Disposition"
-            ] = "attachment; filename=shopping_cart.txt"
+            response['Content-Disposition'] = 'attachment; filename=shop.txt'
             return response
