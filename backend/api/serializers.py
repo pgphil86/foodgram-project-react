@@ -2,13 +2,18 @@ import base64
 from datetime import datetime
 
 from django.core.files.base import ContentFile
+from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import transaction
-from recipes.models import (Favorite, Ingredient, IngredientInRecipe, Recipe,
-                            ShoppingCart, Tag)
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 from rest_framework.generics import get_object_or_404
+
+from recipes.models import (Favorite, Ingredient, IngredientInRecipe, Recipe,
+                            ShoppingCart, Tag)
 from users.models import Follow, User
+
+MINIMUM_QUANTITY = 1
+MAXIMUM_QUANTITY = 32000
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -273,7 +278,11 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
     image = serializers.CharField(required=False)
     name = serializers.CharField(required=True)
     text = serializers.CharField(required=True)
-    cooking_time = serializers.IntegerField(required=True)
+    cooking_time = serializers.IntegerField(
+        required=True,
+        validators=(MinValueValidator(MINIMUM_QUANTITY),
+                    MaxValueValidator(MAXIMUM_QUANTITY))
+    )
     ingredients = IngredientRecipeShortSerializer(required=True, many=True)
     tags = serializers.PrimaryKeyRelatedField(
         required=True, many=True, queryset=Tag.objects.all()
@@ -298,9 +307,6 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
         )
 
     def validate(self, data):
-        cooking_time = int(self.initial_data['cooking_time'])
-        if cooking_time < 1 or cooking_time > 380:
-            raise ValidationError('Cooking time must be > 1 < 380.')
         ingredients_pk = [obj['id'] for obj in
                           self.initial_data['ingredients']]
         if len(ingredients_pk) > len(set(ingredients_pk)):
@@ -319,13 +325,8 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
         if recipe:
             raise ValidationError('Recipe already exist.')
         with transaction.atomic():
-            obj = Recipe(
-                name=self.validated_data['name'],
-                image=self.convert_base64_to_image(),
-                text=self.validated_data['text'],
-                cooking_time=self.validated_data['cooking_time'],
-                author=self.context['request'].user
-            )
+            obj = Recipe.objects.create(**validated_data,
+                                        author=self.context['request'].user)
             obj.save()
             ingredients = [IngredientInRecipe(
                 ingredient=item['id'],

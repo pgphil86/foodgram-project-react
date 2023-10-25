@@ -1,5 +1,14 @@
 import io
 
+from django.db.models import Q, Sum
+from django.http import HttpResponse
+from django_filters import rest_framework
+from rest_framework import permissions, status
+from rest_framework.decorators import action
+from rest_framework.generics import get_object_or_404
+from rest_framework.response import Response
+from rest_framework.viewsets import ModelViewSet
+
 from api.filters import IngredientFilter, RecipeFilter
 from api.permissions import AuthorPermissions
 from api.serializers import (FavoriteSerializer, IngredientSerializer,
@@ -7,15 +16,7 @@ from api.serializers import (FavoriteSerializer, IngredientSerializer,
                              ShoppingCartSerializer, SubscribeSerializer,
                              TagSerializer, UserPasswordSerializer,
                              UserSerializer)
-from django.db.models import Q, Sum
-from django.http import HttpResponse
-from django_filters import rest_framework
 from recipes.models import Favorite, Ingredient, Recipe, ShoppingCart, Tag
-from rest_framework import permissions, status
-from rest_framework.decorators import action
-from rest_framework.generics import get_object_or_404
-from rest_framework.response import Response
-from rest_framework.viewsets import ModelViewSet
 from users.models import Follow, User
 
 
@@ -47,11 +48,11 @@ class UserViewSet(ModelViewSet):
     @action(detail=False, methods=['GET'],
             permission_classes=[permissions.IsAuthenticated])
     def subscriptions(self, request):
-        author_id = request.user.subscribes.all().values_list(
-            'author_id', flat=True)
-        self.queryset = User.objects.filter(id__in=author_id)
-        self.serializer_class = SubscribeSerializer
-        return super().list(request)
+        queryset = User.objects.filter(following__user=request.user)
+        page = self.paginate_queryset(queryset)
+        serializer = SubscribeSerializer(
+            page, many=True, context={'request': request})
+        return self.get_paginated_response(serializer.data)
 
     @action(detail=True, methods=['POST', 'DELETE'],
             permission_classes=[permissions.IsAuthenticated])
@@ -66,8 +67,14 @@ class UserViewSet(ModelViewSet):
                 'request': request,
                 'recipes_limit': request.query_params.get('recipes_limit')
             }).data, status=status.HTTP_201_CREATED)
-        Follow.objects.get(user=request.user, author_id=pk).delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
+        try:
+            Follow.objects.get(user=request.user, author_id=pk)
+        except Follow.DoesNotExist:
+            return Response({'error': 'Object not found'},
+                            status=status.HTTP_404_NOT_FOUND)
+        else:
+            Follow.objects.get(user=request.user, author_id=pk).delete()
+            return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 class TagViewSet(ModelViewSet):
@@ -135,8 +142,14 @@ class RecipeViewSet(ModelViewSet):
             return Response(FavoriteSerializer(favorite, context={
                 'request': request,
             }).data, status=status.HTTP_201_CREATED)
-        Favorite.objects.get(user=request.user, recipe_id=pk).delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
+        try:
+            Favorite.objects.get(user=request.user, recipe_id=pk)
+        except Favorite.DoesNotExist:
+            return Response({'error': 'Recipe not found'},
+                            status=status.HTTP_404_NOT_FOUND)
+        else:
+            Favorite.objects.get(user=request.user, recipe_id=pk).delete()
+            return Response(status=status.HTTP_204_NO_CONTENT)
 
     @action(detail=True, methods=['POST', 'DELETE'],
             permission_classes=[permissions.IsAuthenticated])
@@ -150,8 +163,14 @@ class RecipeViewSet(ModelViewSet):
             return Response(ShoppingCartSerializer(shopping_list, context={
                 'request': request,
             }).data, status=status.HTTP_201_CREATED)
-        ShoppingCart.objects.get(user=request.user, recipe_id=pk).delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
+        try:
+            ShoppingCart.objects.get(user=request.user, recipe_id=pk)
+        except ShoppingCart.DoesNotExist:
+            return Response({'message': 'Object not found.'},
+                            status=status.HTTP_404_NOT_FOUND)
+        else:
+            ShoppingCart.objects.get(user=request.user, recipe_id=pk).delete()
+            return Response(status=status.HTTP_204_NO_CONTENT)
 
     @action(detail=False, methods=['GET'],
             permission_classes=[permissions.IsAuthenticated])
@@ -172,7 +191,7 @@ class RecipeViewSet(ModelViewSet):
             'link_of_ingredients__ingredient__measurement_unit'
         )
         list = ''
-        for i in range(len(amounts)):
+        for i in amounts:
             list += f'{amounts[i][1]} ({amounts[i][2]}) -- {amounts[i][0]}\n'
         text = io.BytesIO()
         with io.TextIOWrapper(text, encoding="utf-8", write_through=True) as f:

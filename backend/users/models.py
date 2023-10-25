@@ -4,9 +4,9 @@ from django.db import models
 
 
 class User(AbstractUser):
-    '''
+    """
     Model of user.
-    '''
+    """
     REGEX = r'^[\w.@+-]+\Z'
 
     email = models.EmailField(
@@ -58,9 +58,9 @@ class User(AbstractUser):
 
 
 class Follow(models.Model):
-    '''
+    """
     Model of subscription and editing it.
-    '''
+    """
 
     user = models.ForeignKey(
         User,

@@ -2,13 +2,17 @@ from colorfield.fields import ColorField
 from django.core.validators import (MaxValueValidator, MinValueValidator,
                                     RegexValidator)
 from django.db import models
+
 from users.models import User
+
+MINIMUM_QUANTITY = 1
+MAXIMUM_QUANTITY = 32000
 
 
 class Ingredient(models.Model):
-    '''
+    """
     Model of work with ingredients.
-    '''
+    """
 
     measurement_unit = models.CharField(
         max_length=200,
@@ -35,9 +39,9 @@ class Ingredient(models.Model):
 
 
 class Tag(models.Model):
-    '''
+    """
     Tags model.
-    '''
+    """
 
     color = ColorField(
         max_length=7,
@@ -71,9 +75,9 @@ class Tag(models.Model):
 
 
 class Recipe(models.Model):
-    '''
+    """
     Model of work with recipes.
-    '''
+    """
     REGEX = '.*[a-яA-ЯЁё].*'
 
     author = models.ForeignKey(
@@ -84,8 +88,8 @@ class Recipe(models.Model):
     )
     cooking_time = models.PositiveSmallIntegerField(
         verbose_name='Cooking time',
-        validators=(MinValueValidator(1),
-                    MaxValueValidator(360))
+        validators=(MinValueValidator(MINIMUM_QUANTITY),
+                    MaxValueValidator(MAXIMUM_QUANTITY))
     )
     image = models.ImageField(
         verbose_name='Image',
@@ -126,13 +130,13 @@ class Recipe(models.Model):
 
 
 class IngredientInRecipe(models.Model):
-    '''
+    """
     Model of united ingredients and recipes.
-    '''
+    """
 
     amount = models.PositiveSmallIntegerField(
-        validators=((MinValueValidator(0),
-                    MaxValueValidator(3000))),
+        validators=((MinValueValidator(MINIMUM_QUANTITY),
+                    MaxValueValidator(MAXIMUM_QUANTITY))),
         verbose_name='Ingredient quantity'
     )
     ingredient = models.ForeignKey(
@@ -162,9 +166,9 @@ class IngredientInRecipe(models.Model):
 
 
 class Favorite(models.Model):
-    '''
+    """
     Model of work with favorite recipes.
-    '''
+    """
 
     recipe = models.ForeignKey(
         Recipe,
@@ -194,9 +198,9 @@ class Favorite(models.Model):
 
 
 class ShoppingCart(models.Model):
-    '''
+    """
     Model work with users shopping list.
-    '''
+    """
 
     recipe = models.ForeignKey(
         Recipe,
