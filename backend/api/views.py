@@ -61,7 +61,7 @@ class UserViewSet(ModelViewSet):
         user = request.user
         if request.method == 'POST':
             serializer = SubscribeSerializer(
-                data={'user': user.id, 'author': author.id},
+                data={'user': user.id, 'author': author.pk},
                 context={'request': request})
             serializer.is_valid(raise_exception=True)
             Follow.objects.create(user=user, author=author)
