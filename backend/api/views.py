@@ -56,25 +56,23 @@ class UserViewSet(ModelViewSet):
 
     @action(detail=True, methods=['POST', 'DELETE'],
             permission_classes=[permissions.IsAuthenticated])
-    def subscribe(self, request, pk):
-        serializer = SubscribeSerializer(
-            data={'id': pk},
-            context={'request': request, 'method': request.method})
-        serializer.is_valid(raise_exception=True)
+    def subscribe(self, request, **kwargs):
+        author = get_object_or_404(User, id=kwargs['id'])
+        user = request.user
         if request.method == 'POST':
-            subscribe = serializer.save()
-            return Response(SubscribeSerializer(subscribe, context={
-                'request': request,
-                'recipes_limit': request.query_params.get('recipes_limit')
-            }).data, status=status.HTTP_201_CREATED)
-        try:
-            Follow.objects.get(user=request.user, author_id=pk)
-        except Follow.DoesNotExist:
-            return Response({'error': 'Object not found'},
-                            status=status.HTTP_404_NOT_FOUND)
-        else:
-            Follow.objects.get(user=request.user, author_id=pk).delete()
-            return Response(status=status.HTTP_204_NO_CONTENT)
+            serializer = SubscribeSerializer(
+                data={'user': user.id, 'author': author.id},
+                context={'request': request})
+            serializer.is_valid(raise_exception=True)
+            Follow.objects.create(user=user, author=author)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+        subscribe = Follow.objects.filter(user=user, author=author)
+        if not subscribe:
+            return Response({'errors': 'No subscribe.'},
+                            status=status.HTTP_400_BAD_REQUEST)
+        subscribe.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 class TagViewSet(ModelViewSet):
