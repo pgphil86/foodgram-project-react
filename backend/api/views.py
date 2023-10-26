@@ -60,7 +60,7 @@ class UserViewSet(ModelViewSet):
 
     @action(detail=True, methods=['POST', 'DELETE'],
             permission_classes=[permissions.IsAuthenticated])
-    def subscribe(self, request, pk):
+    def subscribe(self, request, *args, **kwargs):
         user = request.user
         user_id = self.kwargs.get('id')
         author = get_object_or_404(User, id=user_id)
