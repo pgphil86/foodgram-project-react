@@ -57,11 +57,11 @@ class UserViewSet(ModelViewSet):
     @action(detail=True, methods=['POST', 'DELETE'],
             permission_classes=[permissions.IsAuthenticated])
     def subscribe(self, request, **kwargs):
-        author = get_object_or_404(User, id=kwargs['id'])
+        author = get_object_or_404(User, id=kwargs['pk'])
         user = request.user
         if request.method == 'POST':
             serializer = SubscribeSerializer(
-                data={'user': user.id, 'author': author.pk},
+                data={'user': user.id, 'author': author.id},
                 context={'request': request})
             serializer.is_valid(raise_exception=True)
             Follow.objects.create(user=user, author=author)
