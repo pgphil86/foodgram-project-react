@@ -48,33 +48,32 @@ class UserViewSet(ModelViewSet):
     @action(detail=False, methods=['GET'],
             permission_classes=[permissions.IsAuthenticated])
     def subscriptions(self, request):
-        queryset = User.objects.filter(following__user=request.user)
-        page = self.paginate_queryset(queryset)
-        if page is not None:
-            serializer = SubscribeSerializer(page,
-                                             many=True,
-                                             context={'request': request})
-            return self.get_paginated_response(serializer.data)
+        author_id = request.user.subscribes.all().values_list(
+            'author_id', flat=True)
+        self.queryset = User.objects.filter(id__in=author_id)
+        self.serializer_class = SubscribeSerializer
+        return super().list(request)
 
     @action(detail=True, methods=['POST', 'DELETE'],
             permission_classes=[permissions.IsAuthenticated])
-    def subscribe(self, request, id):
-        user = request.user
-        author = get_object_or_404(User, pk=id)
+    def subscribe(self, request, pk):
+        serializer = SubscribeSerializer(
+            data={'id': pk},
+            context={'request': request, 'method': request.method})
+        serializer.is_valid(raise_exception=True)
         if request.method == 'POST':
-            serializer = SubscribeSerializer(author,
-                                             data=request.data,
-                                             context={'request': request})
-            serializer.is_valid(raise_exception=True)
-            Follow.objects.create(user=user,
-                                  author=author)
-            return Response(serializer.data,
-                            status=status.HTTP_201_CREATED)
-        if request.method == 'DELETE':
-            instance = get_object_or_404(Follow,
-                                         user=user,
-                                         author=author)
-            self.perform_destroy(instance)
+            subscribe = serializer.save()
+            return Response(SubscribeSerializer(subscribe, context={
+                'request': request,
+                'recipes_limit': request.query_params.get('recipes_limit')
+            }).data, status=status.HTTP_201_CREATED)
+        try:
+            Follow.objects.get(user=request.user, author_id=pk)
+        except Follow.DoesNotExist:
+            return Response({'error': 'Object not found'},
+                            status=status.HTTP_404_NOT_FOUND)
+        else:
+            Follow.objects.get(user=request.user, author_id=pk).delete()
             return Response(status=status.HTTP_204_NO_CONTENT)
 
 
