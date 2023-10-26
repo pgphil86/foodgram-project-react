@@ -164,7 +164,7 @@ class RecipeViewSet(ModelViewSet):
                 'request': request,
             }).data, status=status.HTTP_201_CREATED)
         shopping_cart = ShoppingCart.objects.get(
-            Recipe.objects.get(pk=pk).author)
+            Recipe.objects.get(pk=pk).author, user=request.user)
         if not shopping_cart:
             return Response({'message': 'Object not found.'},
                             status=status.HTTP_404_NOT_FOUND)
