@@ -89,6 +89,7 @@ class IngredientViewSet(ModelViewSet):
     filter_backends = (rest_framework.DjangoFilterBackend,)
     filterset_class = IngredientFilter
     pagination_class = None
+    permission_classes = (permissions.AllowAny, )
 
 
 class RecipeViewSet(ModelViewSet):
