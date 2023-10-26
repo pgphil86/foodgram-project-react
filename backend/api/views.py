@@ -154,8 +154,7 @@ class RecipeViewSet(ModelViewSet):
     @action(detail=True, methods=['POST', 'DELETE'],
             permission_classes=[permissions.IsAuthenticated])
     def shopping_cart(self, request, **kwargs):
-        recipe = get_object_or_404(Recipe, id=kwargs['pk'])
-
+        recipe = get_object_or_404(Recipe, id=self.initial_data['id'])
         if request.method == 'POST':
             serializer = ShoppingCartSerializer(recipe, data=request.data,
                                                 context={'request': request})
