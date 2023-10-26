@@ -48,30 +48,39 @@ class UserViewSet(ModelViewSet):
     @action(detail=False, methods=['GET'],
             permission_classes=[permissions.IsAuthenticated])
     def subscriptions(self, request):
-        queryset = User.objects.filter(following__user=request.user)
-        page = self.paginate_queryset(queryset)
-        serializer = SubscribeSerializer(page, many=True,
-                                         context={'request': request})
+        user = request.user
+        queryset = User.objects.filter(following__user=user)
+        pages = self.paginate_queryset(queryset)
+        serializer = SubscribeSerializer(
+            pages,
+            many=True,
+            context={'request': request}
+        )
         return self.get_paginated_response(serializer.data)
 
     @action(detail=True, methods=['POST', 'DELETE'],
             permission_classes=[permissions.IsAuthenticated])
-    def subscribe(self, request, **kwargs):
-        author = get_object_or_404(User, id=kwargs['pk'])
+    def subscribe(self, request, pk):
         user = request.user
+        user_id = self.kwargs.get('id')
+        author = get_object_or_404(User, id=user_id)
+        subscribe = Follow.objects.filter(user=user, author=author)
         if request.method == 'POST':
-            serializer = SubscribeSerializer(
-                data={'user': user.id, 'author': author.id},
-                context={'request': request})
-            serializer.is_valid(raise_exception=True)
+            if subscribe.exists():
+                data = {'errors': 'Вы уже подписаны на автора!'}
+                return Response(data=data, status=status.HTTP_400_BAD_REQUEST)
             Follow.objects.create(user=user, author=author)
+            serializer = SubscribeSerializer(
+                author,
+                context={'request': request}
+            )
             return Response(serializer.data, status=status.HTTP_201_CREATED)
-        follow = Follow.objects.get(user=user, author=author)
-        if not follow:
-            return Response({'error': 'Object not found'},
-                            status=status.HTTP_404_NOT_FOUND)
-        follow.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
+        if request.method == 'DELETE':
+            if not subscribe.exists():
+                data = {'errors': 'Вы не подписаны на автора!'}
+                return Response(data=data, status=status.HTTP_400_BAD_REQUEST)
+            subscribe.delete()
+            return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 class TagViewSet(ModelViewSet):
