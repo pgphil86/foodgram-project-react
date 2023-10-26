@@ -3,7 +3,7 @@ import io
 from django.db.models import Q, Sum
 from django.http import HttpResponse
 from django_filters import rest_framework
-from rest_framework import filters, permissions, status
+from rest_framework import permissions, status
 from rest_framework.decorators import action
 from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
@@ -84,7 +84,6 @@ class TagViewSet(ModelViewSet):
 class IngredientViewSet(ModelViewSet):
     queryset = Ingredient.objects.all()
     serializer_class = IngredientSerializer
-    filter_backends = (filters.SearchFilters,)
     filterset_class = IngredientFilter
     pagination_class = None
     permission_classes = (permissions.AllowAny, )
