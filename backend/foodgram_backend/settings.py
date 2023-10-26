@@ -1,14 +1,20 @@
 import os
 from pathlib import Path
 
+import dotenv
+
+basedir = os.path.abspath(os.path.dirname(__file__))
+env_file = os.path.join(basedir, '.env')
+if os.path.exists(env_file):
+    dotenv.load_dotenv(env_file)
+
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = os.getenv('SECRET_KEY', default='secret_key')
 
-# DEBUG = os.getenv('DEBUG', default=False) == 'True'
-DEBUG = True
-# ALLOWED_HOSTS = os.environ.get('DJANGO_ALLOWED_HOSTS')
-ALLOWED_HOSTS = '158.160.67.222', '127.0.0.1:8080', 'localhost', 'food.viewdns.net'
+DEBUG = os.getenv('DEBUG', default=False).lower() == 'True'
+
+ALLOWED_HOSTS = os.environ.get('DJANGO_ALLOWED_HOSTS').split(',')
 
 INSTALLED_APPS = [
     'django.contrib.admin',
