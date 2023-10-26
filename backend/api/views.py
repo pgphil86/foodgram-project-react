@@ -48,33 +48,30 @@ class UserViewSet(ModelViewSet):
     @action(detail=False, methods=['GET'],
             permission_classes=[permissions.IsAuthenticated])
     def subscriptions(self, request):
-        user = request.user
         queryset = User.objects.filter(following__user=request.user)
         page = self.paginate_queryset(queryset)
-        serializer = self.get_serializer(page, many=True)
+        serializer = SubscribeSerializer(page, many=True,
+                                         context={'request': request})
         return self.get_paginated_response(serializer.data)
 
     @action(detail=True, methods=['POST', 'DELETE'],
             permission_classes=[permissions.IsAuthenticated])
-    def subscribe(self, request, pk):
-        serializer = SubscribeSerializer(
-            data={'id': pk},
-            context={'request': request, 'method': request.method})
-        serializer.is_valid(raise_exception=True)
+    def subscribe(self, request, **kwargs):
+        author = get_object_or_404(User, id=kwargs['id'])
+        user = request.user
         if request.method == 'POST':
-            subscribe = serializer.save()
-            return Response(SubscribeSerializer(subscribe, context={
-                'request': request,
-                'recipes_limit': request.query_params.get('recipes_limit')
-            }).data, status=status.HTTP_201_CREATED)
-        try:
-            Follow.objects.get(user=request.user, author_id=pk)
-        except Follow.DoesNotExist:
+            serializer = SubscribeSerializer(
+                data={'user': user.id, 'author': author.id},
+                context={'request': request})
+            serializer.is_valid(raise_exception=True)
+            Follow.objects.create(user=user, author=author)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        follow = Follow.objects.get(user=user, author=author)
+        if not follow:
             return Response({'error': 'Object not found'},
                             status=status.HTTP_404_NOT_FOUND)
-        else:
-            Follow.objects.get(user=request.user, author_id=pk).delete()
-            return Response(status=status.HTTP_204_NO_CONTENT)
+        follow.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 class TagViewSet(ModelViewSet):
