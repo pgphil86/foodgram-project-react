@@ -49,30 +49,32 @@ class UserViewSet(ModelViewSet):
             permission_classes=[permissions.IsAuthenticated])
     def subscriptions(self, request):
         user = request.user
-        queryset = User.objects.filter(following__user=user)
+        queryset = User.objects.filter(following__user=request.user)
         page = self.paginate_queryset(queryset)
         serializer = self.get_serializer(page, many=True)
         return self.get_paginated_response(serializer.data)
 
     @action(detail=True, methods=['POST', 'DELETE'],
             permission_classes=[permissions.IsAuthenticated])
-    def subscribe(self, request, **kwargs):
-        author = get_object_or_404(User, id=kwargs['id'])
-        user = request.user
+    def subscribe(self, request, pk):
+        serializer = SubscribeSerializer(
+            data={'id': pk},
+            context={'request': request, 'method': request.method})
+        serializer.is_valid(raise_exception=True)
         if request.method == 'POST':
-            serializer = SubscribeSerializer(
-                data={'user': user.id, 'author': author.id},
-                context={'request': request})
-            serializer.is_valid(raise_exception=True)
-            Follow.objects.create(user=user, author=author)
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-
-        subscribe = Follow.objects.filter(user=user, author=author)
-        if not subscribe:
-            return Response({'errors': 'No subscribe.'},
-                            status=status.HTTP_400_BAD_REQUEST)
-        subscribe.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
+            subscribe = serializer.save()
+            return Response(SubscribeSerializer(subscribe, context={
+                'request': request,
+                'recipes_limit': request.query_params.get('recipes_limit')
+            }).data, status=status.HTTP_201_CREATED)
+        try:
+            Follow.objects.get(user=request.user, author_id=pk)
+        except Follow.DoesNotExist:
+            return Response({'error': 'Object not found'},
+                            status=status.HTTP_404_NOT_FOUND)
+        else:
+            Follow.objects.get(user=request.user, author_id=pk).delete()
+            return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 class TagViewSet(ModelViewSet):
@@ -84,10 +86,9 @@ class TagViewSet(ModelViewSet):
 class IngredientViewSet(ModelViewSet):
     queryset = Ingredient.objects.all()
     serializer_class = IngredientSerializer
+    filter_backends = (rest_framework.DjangoFilterBackend,)
     filterset_class = IngredientFilter
     pagination_class = None
-    permission_classes = (permissions.AllowAny, )
-    search_fields = ('^name',)
 
 
 class RecipeViewSet(ModelViewSet):
@@ -131,43 +132,45 @@ class RecipeViewSet(ModelViewSet):
 
     @action(detail=True, methods=['POST', 'DELETE'],
             permission_classes=[permissions.IsAuthenticated])
-    def favorite(self, request, **kwargs):
-        recipe = get_object_or_404(Recipe, id=kwargs['pk'])
-        user = request.user
+    def favorite(self, request, pk):
+        serializer = FavoriteSerializer(
+            data={'id': pk},
+            context={'request': request, 'method': request.method})
+        serializer.is_valid(raise_exception=True)
         if request.method == 'POST':
-            serializer = FavoriteSerializer(
-                data={'user': user.id, 'recipe': recipe.id})
-            serializer.is_valid(raise_exception=True)
-            Favorite.objects.create(user=user, recipe=recipe)
-            return Response(serializer.data,
-                            status=status.HTTP_201_CREATED)
-
-        favorite = Favorite.objects.filter(user=user.id, recipe=recipe.id)
-        if not favorite:
-            return Response({'errors': 'Recipe not in favorite.'},
-                            status=status.HTTP_400_BAD_REQUEST)
-        favorite.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
+            favorite = serializer.save()
+            return Response(FavoriteSerializer(favorite, context={
+                'request': request,
+            }).data, status=status.HTTP_201_CREATED)
+        try:
+            Favorite.objects.get(user=request.user, recipe_id=pk)
+        except Favorite.DoesNotExist:
+            return Response({'error': 'Recipe not found'},
+                            status=status.HTTP_404_NOT_FOUND)
+        else:
+            Favorite.objects.get(user=request.user, recipe_id=pk).delete()
+            return Response(status=status.HTTP_204_NO_CONTENT)
 
     @action(detail=True, methods=['POST', 'DELETE'],
             permission_classes=[permissions.IsAuthenticated])
-    def shopping_cart(self, request, **kwargs):
-        recipe = get_object_or_404(Recipe, id=kwargs['pk'])
-        user = request.user
+    def shopping_cart(self, request, pk):
+        serializer = ShoppingCartSerializer(
+            data={'id': pk},
+            context={'request': request, 'method': request.method})
+        serializer.is_valid(raise_exception=True)
         if request.method == 'POST':
-            serializer = ShoppingCartSerializer(
-                data={'user': user.id, 'recipe': recipe.id},
-                context={'request': request})
-            serializer.is_valid(raise_exception=True)
-            ShoppingCart.objects.create(user=user, recipe=recipe)
-            return Response(serializer.data, status=status.HTTP_200_OK)
-        shopping_cart = ShoppingCart.objects.filter(
-            recipe=recipe.id, user=user.id)
-        if not shopping_cart:
-            return Response({'errors': 'Object not found.'},
-                            status=status.HTTP_400_BAD_REQUEST)
-        shopping_cart.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
+            shopping_list = serializer.save()
+            return Response(ShoppingCartSerializer(shopping_list, context={
+                'request': request,
+            }).data, status=status.HTTP_201_CREATED)
+        try:
+            ShoppingCart.objects.get(user=request.user, recipe_id=pk)
+        except ShoppingCart.DoesNotExist:
+            return Response({'message': 'Object not found.'},
+                            status=status.HTTP_404_NOT_FOUND)
+        else:
+            ShoppingCart.objects.get(user=request.user, recipe_id=pk).delete()
+            return Response(status=status.HTTP_204_NO_CONTENT)
 
     @action(detail=False, methods=['GET'],
             permission_classes=[permissions.IsAuthenticated])
