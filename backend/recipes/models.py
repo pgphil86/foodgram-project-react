@@ -14,19 +14,19 @@ class Ingredient(models.Model):
     Model of work with ingredients.
     """
 
-    measurement_unit = models.CharField(
-        max_length=200,
-        verbose_name='Measurement unit',
-    )
     name = models.CharField(
         max_length=200,
         verbose_name='Name of ingredient',
+    )
+    measurement_unit = models.CharField(
+        max_length=200,
+        verbose_name='Measurement unit',
     )
 
     class Meta:
         constraints = [
             models.UniqueConstraint(
-                fields=('name', 'measurement_unit',),
+                fields=('measurement_unit', 'name',),
                 name='unique_ingredient'
             )
         ]

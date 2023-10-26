@@ -98,6 +98,10 @@ class IngredientInRecipeSerializer(serializers.ModelSerializer):
 class IngredientRecipeShortSerializer(serializers.ModelSerializer):
     id = serializers.PrimaryKeyRelatedField(required=True,
                                             queryset=Ingredient.objects.all())
+    amount = serializers.IntegerField(
+        validators=(MinValueValidator(MINIMUM_QUANTITY),
+                    MaxValueValidator(MAXIMUM_QUANTITY))
+    )
 
     class Meta:
         model = IngredientInRecipe
