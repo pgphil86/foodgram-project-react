@@ -48,38 +48,33 @@ class UserViewSet(ModelViewSet):
     @action(detail=False, methods=['GET'],
             permission_classes=[permissions.IsAuthenticated])
     def subscriptions(self, request):
-        user = request.user
-        queryset = User.objects.filter(following__user=user)
-        pages = self.paginate_queryset(queryset)
-        serializer = SubscribeSerializer(
-            pages,
-            many=True,
-            context={'request': request}
-        )
-        return self.get_paginated_response(serializer.data)
+        queryset = User.objects.filter(following__user=request.user)
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = SubscribeSerializer(page,
+                                             many=True,
+                                             context={'request': request})
+            return self.get_paginated_response(serializer.data)
 
     @action(detail=True, methods=['POST', 'DELETE'],
             permission_classes=[permissions.IsAuthenticated])
-    def subscribe(self, request, *args, **kwargs):
+    def subscribe(self, request, pk):
         user = request.user
-        user_id = self.kwargs.get('id')
-        author = get_object_or_404(User, id=user_id)
-        subscribe = Follow.objects.filter(user=user, author=author)
+        author = get_object_or_404(User, pk=pk)
         if request.method == 'POST':
-            if subscribe.exists():
-                data = {'errors': 'Вы уже подписаны на автора!'}
-                return Response(data=data, status=status.HTTP_400_BAD_REQUEST)
-            Follow.objects.create(user=user, author=author)
-            serializer = SubscribeSerializer(
-                author,
-                context={'request': request}
-            )
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
+            serializer = SubscribeSerializer(author,
+                                             data=request.data,
+                                             context={'request': request})
+            serializer.is_valid(raise_exception=True)
+            Follow.objects.create(user=user,
+                                  author=author)
+            return Response(serializer.data,
+                            status=status.HTTP_201_CREATED)
         if request.method == 'DELETE':
-            if not subscribe.exists():
-                data = {'errors': 'Вы не подписаны на автора!'}
-                return Response(data=data, status=status.HTTP_400_BAD_REQUEST)
-            subscribe.delete()
+            instance = get_object_or_404(Follow,
+                                         user=user,
+                                         author=author)
+            self.perform_destroy(instance)
             return Response(status=status.HTTP_204_NO_CONTENT)
 
 
