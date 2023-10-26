@@ -153,27 +153,25 @@ class RecipeViewSet(ModelViewSet):
 
     @action(detail=True, methods=['POST', 'DELETE'],
             permission_classes=[permissions.IsAuthenticated])
-    def shopping_cart(self, request, **kwargs):
-        recipe = get_object_or_404(Recipe, id=self.initial_data['id'])
+    def shopping_cart(self, request, pk):
+        serializer = ShoppingCartSerializer(
+            data={'id': pk},
+            context={'request': request, 'method': request.method})
+        serializer.is_valid(raise_exception=True)
         if request.method == 'POST':
-            serializer = ShoppingCartSerializer(recipe, data=request.data,
-                                                context={'request': request})
-            serializer.is_valid(raise_exception=True)
-            if not ShoppingCart.objects.filter(user=request.user,
-                                               recipe=recipe).exists():
-                ShoppingCart.objects.create(user=request.user, recipe=recipe)
-                return Response(serializer.data,
-                                status=status.HTTP_201_CREATED)
-            return Response({'errors': 'Recipe already in list.'},
-                            status=status.HTTP_400_BAD_REQUEST)
-
-        if request.method == 'DELETE':
-            get_object_or_404(ShoppingCart, user=request.user,
-                              recipe=recipe).delete()
-            return Response(
-                {'detail': 'Recipe was delete.'},
-                status=status.HTTP_204_NO_CONTENT
-            )
+            shopping_list = serializer.save()
+            return Response(ShoppingCartSerializer(shopping_list, context={
+                'request': request,
+            }).data, status=status.HTTP_201_CREATED)
+        shopping_cart = Recipe.objects.get(pk=pk).author
+        try:
+            shopping_cart
+        except ShoppingCart.DoesNotExist:
+            return Response({'message': 'Object not found.'},
+                            status=status.HTTP_404_NOT_FOUND)
+        else:
+            shopping_cart.delete()
+            return Response(status=status.HTTP_204_NO_CONTENT)
 
     @action(detail=False, methods=['GET'],
             permission_classes=[permissions.IsAuthenticated])
