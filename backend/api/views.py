@@ -163,7 +163,8 @@ class RecipeViewSet(ModelViewSet):
             return Response(ShoppingCartSerializer(shopping_list, context={
                 'request': request,
             }).data, status=status.HTTP_201_CREATED)
-        shopping_cart = Recipe.objects.get(pk=pk).author
+        shopping_cart = ShoppingCart.objects.get(
+            Recipe.objects.get(pk=pk).author)
         try:
             shopping_cart
         except ShoppingCart.DoesNotExist:
