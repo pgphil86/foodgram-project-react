@@ -140,13 +140,13 @@ class RecipeViewSet(ModelViewSet):
             return Response(FavoriteSerializer(favorite, context={
                 'request': request,
             }).data, status=status.HTTP_201_CREATED)
-        try:
-            Favorite.objects.get(user=request.user, recipe_id=pk)
-        except Favorite.DoesNotExist:
+        favorite = Favorite.objects.get(user=request.user,
+                                        recipe_id=pk)
+        if not favorite:
             return Response({'error': 'Recipe not found'},
                             status=status.HTTP_404_NOT_FOUND)
         else:
-            Favorite.objects.get(user=request.user, recipe_id=pk).delete()
+            favorite.delete()
             return Response(status=status.HTTP_204_NO_CONTENT)
 
     @action(detail=True, methods=['POST', 'DELETE'],
@@ -161,8 +161,14 @@ class RecipeViewSet(ModelViewSet):
             return Response(ShoppingCartSerializer(shopping_list, context={
                 'request': request,
             }).data, status=status.HTTP_201_CREATED)
-        ShoppingCart.objects.get(user=request.user, recipe_id=pk).delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
+        shopping_cart = ShoppingCart.objects.get(user=request.user,
+                                                 recipe_id=pk)
+        if not shopping_cart:
+            return Response({'message': 'Object not found.'},
+                            status=status.HTTP_404_NOT_FOUND)
+        else:
+            shopping_cart.delete()
+            return Response(status=status.HTTP_204_NO_CONTENT)
 
     @action(detail=False, methods=['GET'],
             permission_classes=[permissions.IsAuthenticated])

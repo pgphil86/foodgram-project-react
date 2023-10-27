@@ -195,7 +195,7 @@ class RecipeSerializer(serializers.ModelSerializer):
 
     def get_ingredients(self, instance):
         return IngredientInRecipeSerializer(
-            IngredientInRecipe.objects.filter(recipe=instance),
+            IngredientInRecipe.objects.filter(recipe__ingredients=instance),
             many=True
         ).data
 
@@ -203,14 +203,16 @@ class RecipeSerializer(serializers.ModelSerializer):
         if not self.context['request'].user.is_authenticated:
             return False
         return Favorite.objects.filter(
-            recipe=instance, user=self.context['request'].user
+            favorites__recipe=instance,
+            user=self.context['request'].user
         ).exists()
 
     def get_is_in_shopping_cart(self, instance):
         if not self.context['request'].user.is_authenticated:
             return False
         return ShoppingCart.objects.filter(
-            recipe=instance, user=self.context['request'].user
+            shopping_list__recipe=instance,
+            user=self.context['request'].user
         ).exists()
 
 
