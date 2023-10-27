@@ -150,24 +150,24 @@ class RecipeViewSet(ModelViewSet):
 
     @action(detail=True, methods=['POST', 'DELETE'],
             permission_classes=[permissions.IsAuthenticated])
-    def shopping_cart(self, request, pk):
-        serializer = ShoppingCartSerializer(
-            data={'id': pk},
-            context={'request': request, 'method': request.method})
-        serializer.is_valid(raise_exception=True)
+    def shopping_cart(self, request, **kwargs):
+        recipe = get_object_or_404(Recipe, id=kwargs['pk'])
+        user = request.user
         if request.method == 'POST':
-            shopping_list = serializer.save()
-            return Response(ShoppingCartSerializer(shopping_list, context={
-                'request': request,
-            }).data, status=status.HTTP_201_CREATED)
-        shopping_cart = ShoppingCart.objects.get(user=request.user,
-                                                 recipe_id=pk)
+            serializer = ShoppingCartSerializer(
+                data={'user': user.id, 'recipe': recipe.id},
+                context={'request': request})
+            serializer.is_valid(raise_exception=True)
+            ShoppingCart.objects.create(user=user, recipe=recipe)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+
+        shopping_cart = ShoppingCart.objects.filter(
+            recipe=recipe.id, user=user.id)
         if not shopping_cart:
-            return Response({'message': 'Object not found.'},
-                            status=status.HTTP_404_NOT_FOUND)
-        else:
-            shopping_cart.delete()
-            return Response(status=status.HTTP_204_NO_CONTENT)
+            return Response({'errors': 'Recipe not in list.'},
+                            status=status.HTTP_400_BAD_REQUEST)
+        shopping_cart.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
     @action(detail=False, methods=['GET'],
             permission_classes=[permissions.IsAuthenticated])
