@@ -68,7 +68,7 @@ class UserViewSet(ModelViewSet):
                 'recipes_limit': request.query_params.get('recipes_limit')
             }).data, status=status.HTTP_201_CREATED)
         follow = Follow.objects.get(follower__user=request.user,
-                                    following_author_id=pk)
+                                    following__author_id=pk)
         try:
             follow
         except Follow.DoesNotExist:
