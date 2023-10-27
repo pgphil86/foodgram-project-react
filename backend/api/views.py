@@ -154,42 +154,23 @@ class RecipeViewSet(ModelViewSet):
     @action(detail=True, methods=['POST', 'DELETE'],
             permission_classes=[permissions.IsAuthenticated])
     def shopping_cart(self, request, pk):
-        recipe = self.get_object()
-        user = request.user
-
-        if request.method == "POST":
-            if ShoppingCart.objects.filter(user=user, recipe=recipe).exists():
-                return Response(
-                    {"detail":
-                     "Recipe is already added to the shopping list."},
-                    status=status.HTTP_400_BAD_REQUEST,
-                )
-
-            ShoppingCart.objects.create(user=user, recipe=recipe)
-
-            return Response(
-                {"detail": "Recipe added to the shopping list."},
-                status=status.HTTP_201_CREATED,
-            )
-
-        if request.method == "DELETE":
-            try:
-                shopping_cart_item = ShoppingCart.objects.get(
-                    user=user, recipe=recipe
-                )
-            except ShoppingCart.DoesNotExist:
-                return Response(
-                    {"detail": "Recipe not found in the shopping list."},
-                    status=status.HTTP_400_BAD_REQUEST,
-                )
-
-            shopping_cart_item.delete()
-
-            return Response(
-                {"detail": "Recipe removed from the shopping list."},
-                status=status.HTTP_204_NO_CONTENT,
-            )
-        return {}
+        serializer = ShoppingCartSerializer(
+            data={'id': pk},
+            context={'request': request, 'method': request.method})
+        serializer.is_valid(raise_exception=True)
+        if request.method == 'POST':
+            shopping_list = serializer.save()
+            return Response(ShoppingCartSerializer(shopping_list, context={
+                'request': request,
+            }).data, status=status.HTTP_201_CREATED)
+        shopping_cart = ShoppingCart.objects.get(user=request.user,
+                                                 recipe_id=pk)
+        if not shopping_cart:
+            return Response({'message': 'Object not found.'},
+                            status=status.HTTP_404_NOT_FOUND)
+        else:
+            shopping_cart.delete()
+            return Response(status=status.HTTP_204_NO_CONTENT)
 
     @action(detail=False, methods=['GET'],
             permission_classes=[permissions.IsAuthenticated])

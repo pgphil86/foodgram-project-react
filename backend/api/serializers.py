@@ -195,23 +195,23 @@ class RecipeSerializer(serializers.ModelSerializer):
 
     def get_ingredients(self, instance):
         return IngredientInRecipeSerializer(
-            IngredientInRecipe.objects.filter(recipe=instance),
+            IngredientInRecipe.objects.filter(recipe__id=instance.id),
             many=True
         ).data
 
     def get_is_favorited(self, instance):
         if not self.context['request'].user.is_authenticated:
             return False
-        return Favorite.objects.filter(
-            recipe=instance, user=self.context['request'].user
-        ).exists()
+        return Favorite.objects.filter(recipe__id=instance.id,
+                                       user=self.request.user
+                                       ).exists()
 
     def get_is_in_shopping_cart(self, instance):
         if not self.context['request'].user.is_authenticated:
             return False
-        return ShoppingCart.objects.filter(
-            recipe=instance, user=self.context['request'].user
-        ).exists()
+        return ShoppingCart.objects.filter(recipe__id=instance.id,
+                                           user=self.request.user
+                                           ).exists()
 
 
 class FavoriteSerializer(serializers.ModelSerializer):
