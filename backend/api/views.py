@@ -48,7 +48,8 @@ class UserViewSet(ModelViewSet):
     @action(detail=False, methods=['GET'],
             permission_classes=[permissions.IsAuthenticated])
     def subscriptions(self, request):
-        author_id = request.user.following.all().all()
+        author_id = request.user.following.all().values_list(
+            'author_id', flat=True)
         self.queryset = User.objects.filter(id__in=author_id)
         self.serializer_class = SubscribeSerializer
         return super().list(request)
@@ -66,7 +67,11 @@ class UserViewSet(ModelViewSet):
                 'request': request,
                 'recipes_limit': request.query_params.get('recipes_limit')
             }).data, status=status.HTTP_201_CREATED)
-        Follow.objects.get(user=request.user, author_id=pk).delete()
+        follow = Follow.objects.get(user=request.user, author_id=pk)
+        if not follow:
+            return Response({'errors': 'No subscribe.'},
+                            status=status.HTTP_400_BAD_REQUEST)
+        follow.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
