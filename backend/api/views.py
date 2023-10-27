@@ -9,14 +9,13 @@ from rest_framework.viewsets import ModelViewSet
 
 from api.filters import IngredientFilter, RecipeFilter
 from api.permissions import AuthorPermissions
-from api.serializers import (FavoriteSerializer, IngredientSerializer,
-                             IngredientInRecipe,
-                             RecipeCreateSerializer, RecipeSerializer,
-                             ShoppingCartSerializer, SubscribeSerializer,
-                             TagSerializer, UserPasswordSerializer,
-                             UserSerializer)
-from recipes.models import (Favorite, Ingredient, IngredientInRecipe,
-                            Recipe, ShoppingCart, Tag)
+from api.serializers import (FavoriteSerializer, IngredientInRecipe,
+                             IngredientSerializer, RecipeCreateSerializer,
+                             RecipeSerializer, ShoppingCartSerializer,
+                             SubscribeSerializer, TagSerializer,
+                             UserPasswordSerializer, UserSerializer)
+from recipes.models import (Favorite, Ingredient, IngredientInRecipe, Recipe,
+                            ShoppingCart, Tag)
 from users.models import Follow, User
 
 
