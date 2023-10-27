@@ -195,14 +195,13 @@ class RecipeSerializer(serializers.ModelSerializer):
 
     def get_ingredients(self, instance):
         return IngredientInRecipeSerializer(
-            IngredientInRecipe.objects.filter(recipe__id=instance.id),
-            many=True
-        ).data
+            IngredientInRecipe.objects.filter(recipe__id=instance),
+            many=True).data
 
     def get_is_favorited(self, instance):
         if not self.context['request'].user.is_authenticated:
             return False
-        return Favorite.objects.filter(recipe__id=instance.id,
+        return Favorite.objects.filter(recipe__id=instance,
                                        user=self.request.user
                                        ).exists()
 
