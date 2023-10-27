@@ -57,26 +57,26 @@ class UserViewSet(ModelViewSet):
     @action(detail=True, methods=['POST', 'DELETE'],
             permission_classes=[permissions.IsAuthenticated])
     def subscribe(self, request, pk):
-        serializer = SubscribeSerializer(
-            data={'id': pk},
-            context={'request': request, 'method': request.method})
-        serializer.is_valid(raise_exception=True)
-        if request.method == 'POST':
-            subscribe = serializer.save()
-            return Response(SubscribeSerializer(subscribe, context={
-                'request': request,
-                'recipes_limit': request.query_params.get('recipes_limit')
-            }).data, status=status.HTTP_201_CREATED)
-        follow = Follow.objects.get(user=request.user,
-                                    author_id=pk)
-        try:
-            follow
-        except Follow.DoesNotExist:
-            return Response({'error': 'Object not found'},
-                            status=status.HTTP_404_NOT_FOUND)
-        else:
-            follow.delete()
-            return Response(status=status.HTTP_204_NO_CONTENT)
+        user = self.request.user
+        author = get_object_or_404(User, pk=pk)
+        if self.request.method == 'POST':
+            queryset = Follow.objects.create(user=user,
+                                             author=author)
+            serializer = SubscribeSerializer(queryset,
+                                             context={'request': request})
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        subscribe = Follow.objects.filter(
+            user=user,
+            author=author
+        )
+        if subscribe.exists():
+            subscribe.delete()
+            return Response(
+                {'success': 'You have unsubscribed.'},
+                status=status.HTTP_204_NO_CONTENT
+            )
+        return Response({'errors': 'You have unsubscribed already.'},
+                        status=status.HTTP_400_BAD_REQUEST)
 
 
 class TagViewSet(ModelViewSet):
