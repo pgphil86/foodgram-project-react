@@ -1,4 +1,6 @@
-from django.db.models import F, Sum
+import io
+
+from django.db.models import Q, Sum
 from django.http import HttpResponse
 from django_filters import rest_framework
 from rest_framework import permissions, status
@@ -9,11 +11,11 @@ from rest_framework.viewsets import ModelViewSet
 
 from api.filters import IngredientFilter, RecipeFilter
 from api.permissions import AuthorPermissions
-from api.serializers import (FavoriteSerializer, IngredientInRecipe,
-                             IngredientSerializer, RecipeCreateSerializer,
-                             RecipeSerializer, ShoppingCartSerializer,
-                             SubscribeSerializer, TagSerializer,
-                             UserPasswordSerializer, UserSerializer)
+from api.serializers import (FavoriteSerializer, IngredientSerializer,
+                             RecipeCreateSerializer, RecipeSerializer,
+                             ShoppingCartSerializer, SubscribeSerializer,
+                             TagSerializer, UserPasswordSerializer,
+                             UserSerializer)
 from recipes.models import Favorite, Ingredient, Recipe, ShoppingCart, Tag
 from users.models import Follow, User
 
@@ -171,19 +173,27 @@ class RecipeViewSet(ModelViewSet):
     @action(detail=False, methods=['GET'],
             permission_classes=[permissions.IsAuthenticated])
     def download_shopping_cart(self, request):
-
-        shopping_cart = IngredientInRecipe.objects.select_related(
-            'recipe', 'ingredient').filter('ingredient__name',
-                                           'ingredient__measurement_unit'
-                                           ).annotate(
-            name=F('ingredient__name'),
-            units=F('ingredient__measurement_unit'),
-            total=Sum('amount')).order_by('-total')
-        text = '\n'.join(
-            [f"{item.get('name')} ({item.get('units')}) - {item.get('total')}"
-             for item in shopping_cart]
+        recipes_id = ShoppingCart.objects.filter(
+            user=request.user).values_list('recipe__pk', flat=True)
+        amounts = Recipe.objects.filter(
+            id__in=recipes_id
+        ).annotate(
+            quantity=Sum(
+                'ingredients__link_of_ingredients__amount',
+                filter=Q(
+                    ingredients__link_of_ingredients__recipe_id__in=recipes_id
+                )
+            )
+        ).distinct().values_list(
+            'quantity', 'link_of_ingredients__ingredient__name',
+            'link_of_ingredients__ingredient__measurement_unit'
         )
-        filename = 'foodgram_shopping_cart.txt'
-        response = HttpResponse(text, content_type='text/plan')
-        response['Content-Disposition'] = f'attachment; filename={filename}'
-        return response
+        list = ''
+        for i in amounts:
+            list += f'{amounts[i][1]} ({amounts[i][2]}) -- {amounts[i][0]}\n'
+        text = io.BytesIO()
+        with io.TextIOWrapper(text, encoding="utf-8", write_through=True) as f:
+            f.write(list)
+            response = HttpResponse(text.getvalue(), content_type='text/plain')
+            response['Content-Disposition'] = 'attachment; filename=shop.txt'
+            return response
