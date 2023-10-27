@@ -161,8 +161,14 @@ class RecipeViewSet(ModelViewSet):
             return Response(ShoppingCartSerializer(shopping_list, context={
                 'request': request,
             }).data, status=status.HTTP_201_CREATED)
-        ShoppingCart.objects.get(user=request.user, recipe_id=pk).delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
+        shopping_cart = ShoppingCart.objects.get(user=request.user,
+                                                 recipe_id=pk)
+        if not shopping_cart:
+            return Response({'message': 'Object not found.'},
+                            status=status.HTTP_404_NOT_FOUND)
+        else:
+            shopping_cart.delete()
+            return Response(status=status.HTTP_204_NO_CONTENT)
 
     @action(detail=False, methods=['GET'],
             permission_classes=[permissions.IsAuthenticated])
