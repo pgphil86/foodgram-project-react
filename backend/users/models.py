@@ -80,11 +80,7 @@ class Follow(models.Model):
             models.UniqueConstraint(
                 fields=('user', 'author'),
                 name='unique_follow'
-            ),
-            models.CheckConstraint(
-                name='It is impossible to subscribe to yourself.',
-                check=models.Q(author=models.F('user'))
-            ),
+            )
         ]
         ordering = ('author',)
         verbose_name = 'Subscription'
