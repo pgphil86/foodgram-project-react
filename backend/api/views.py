@@ -69,9 +69,7 @@ class UserViewSet(ModelViewSet):
             }).data, status=status.HTTP_201_CREATED)
         follow = Follow.objects.get(user=request.user,
                                     author_id=pk)
-        try:
-            follow
-        except Follow.DoesNotExist:
+        if follow:
             return Response({'error': 'Object not found'},
                             status=status.HTTP_404_NOT_FOUND)
         else:
