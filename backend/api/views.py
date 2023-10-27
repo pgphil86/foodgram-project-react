@@ -67,7 +67,7 @@ class UserViewSet(ModelViewSet):
                 'request': request,
                 'recipes_limit': request.query_params.get('recipes_limit')
             }).data, status=status.HTTP_201_CREATED)
-        follow = Follow.objects.get(follower__user=request.user,
+        follow = Follow.objects.get(user=request.user,
                                     following__author_id=pk)
         try:
             follow
