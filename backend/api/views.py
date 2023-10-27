@@ -48,7 +48,7 @@ class UserViewSet(ModelViewSet):
     @action(detail=False, methods=['GET'],
             permission_classes=[permissions.IsAuthenticated])
     def subscriptions(self, request):
-        author_id = request.user.follower.all().all()
+        author_id = request.user.follower.all().filter(following__user=request.user)
         self.queryset = User.objects.filter(id__in=author_id)
         self.serializer_class = SubscribeSerializer
         return super().list(request)
@@ -68,12 +68,14 @@ class UserViewSet(ModelViewSet):
             }).data, status=status.HTTP_201_CREATED)
         follow = Follow.objects.get(user=request.user,
                                     author_id=pk)
-        if follow:
-            return Response({'error': 'Object not found'},
-                            status=status.HTTP_404_NOT_FOUND)
-        else:
-            follow.delete()
-            return Response(status=status.HTTP_204_NO_CONTENT)
+        Follow.objects.get(user=request.user, author_id=pk).delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+#        if follow:
+#            return Response({'error': 'Object not found'},
+#                            status=status.HTTP_404_NOT_FOUND)
+#        else:
+#            follow.delete()
+#            return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 class TagViewSet(ModelViewSet):
