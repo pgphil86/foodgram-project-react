@@ -193,25 +193,23 @@ class RecipeSerializer(serializers.ModelSerializer):
             'text',
             'cooking_time')
 
+    @staticmethod
     def get_ingredients(self, instance):
+        ingredients = IngredientInRecipe.objects.filter(recipe=instance)
         return IngredientInRecipeSerializer(
-            IngredientInRecipe.objects.filter(recipe=instance),
-            many=True
-        ).data
+            ingredients, many=True).data
 
-    def get_is_favorited(self, instance):
-        if not self.context['request'].user.is_authenticated:
+    def get_is_favorited(self, object):
+        request = self.context.get('request')
+        if request is None or request.user.is_anonymous:
             return False
-        return Favorite.objects.filter(
-            recipe=instance, user=self.context['request'].user
-        ).exists()
+        return request.user.favorites.filter(recipe=object).exists()
 
-    def get_is_in_shopping_cart(self, instance):
-        if not self.context['request'].user.is_authenticated:
+    def get_is_in_shopping_cart(self, object):
+        request = self.context.get('request')
+        if request is None or request.user.is_anonymous:
             return False
-        return ShoppingCart.objects.filter(
-            recipe=instance, user=self.context['request'].user
-        ).exists()
+        return request.user.shopping_list.filter(recipe=object).exists()
 
 
 class FavoriteSerializer(serializers.ModelSerializer):

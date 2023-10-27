@@ -48,7 +48,7 @@ class UserViewSet(ModelViewSet):
     @action(detail=False, methods=['GET'],
             permission_classes=[permissions.IsAuthenticated])
     def subscriptions(self, request):
-        queryset = User.objects.filter(following__user=self.request.user)
+        queryset = User.objects.filter(author__user=request.user)
         page = self.paginate_queryset(queryset)
         serializer = SubscribeSerializer(
             page, many=True, context={'request': request})
