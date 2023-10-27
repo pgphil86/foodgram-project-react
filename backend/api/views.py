@@ -67,13 +67,14 @@ class UserViewSet(ModelViewSet):
                 'request': request,
                 'recipes_limit': request.query_params.get('recipes_limit')
             }).data, status=status.HTTP_201_CREATED)
+        follow = Follow.objects.get(user=request.user, user__following=pk)
         try:
-            Follow.objects.get(user=request.user, author_id=pk)
+            follow
         except Follow.DoesNotExist:
             return Response({'error': 'Object not found'},
                             status=status.HTTP_404_NOT_FOUND)
         else:
-            Follow.objects.get(user=request.user, author_id=pk).delete()
+            follow.delete()
             return Response(status=status.HTTP_204_NO_CONTENT)
 
 
