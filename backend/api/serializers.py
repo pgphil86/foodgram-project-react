@@ -329,8 +329,13 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
         if recipe:
             raise ValidationError('Recipe already exist.')
         with transaction.atomic():
-            obj = Recipe.objects.create(**validated_data,
-                                        author=self.context['request'].user)
+            obj = Recipe(
+                name=self.validated_data['name'],
+                image=self.convert_base64_to_image(),
+                text=self.validated_data['text'],
+                cooking_time=self.validated_data['cooking_time'],
+                author=self.context['request'].user
+            )
             obj.save()
             ingredients = [IngredientInRecipe(
                 ingredient=item['id'],
