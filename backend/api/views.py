@@ -103,6 +103,7 @@ class RecipeViewSet(ModelViewSet):
                                             context={'request': request})
         serializer.is_valid(raise_exception=True)
         recipe = serializer.save()
+        print(hex(id(recipe)))
         return Response(RecipeSerializer(
             recipe, context={'request': request}
         ).data, status=status.HTTP_201_CREATED)
@@ -179,14 +180,14 @@ class RecipeViewSet(ModelViewSet):
             id__in=recipes_id
         ).annotate(
             quantity=Sum(
-                'ingredients__link_of_ingredients__amount',
+                'ingredients__ingredientinrecipe__amount',
                 filter=Q(
-                    ingredients__link_of_ingredients__recipe_id__in=recipes_id
+                    ingredientinrecipe_of_ingredients__recipe_id__in=recipes_id
                 )
             )
         ).distinct().values_list(
-            'quantity', 'link_of_ingredients__ingredient__name',
-            'link_of_ingredients__ingredient__measurement_unit'
+            'quantity', 'ingredientinrecipe__ingredient__name',
+            'ingredientinrecipe__ingredient__measurement_unit'
         )
         list = ''
         for i in amounts:
