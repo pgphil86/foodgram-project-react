@@ -180,14 +180,14 @@ class RecipeViewSet(ModelViewSet):
             id__in=recipes_id
         ).annotate(
             quantity=Sum(
-                'ingredients__shopping_list__amount',
+                'ingredients__recipe__amount',
                 filter=Q(
-                    shopping_list_of_ingredients__recipe_id__in=recipes_id
+                    recipe_of_ingredients__recipe_id__in=recipes_id
                 )
             )
         ).distinct().values_list(
-            'quantity', 'shopping_list__ingredient__name',
-            'shopping_list__ingredient__measurement_unit'
+            'quantity', 'recipe__ingredient__name',
+            'recipe__ingredient__measurement_unit'
         )
         list = ''
         for i in amounts:
