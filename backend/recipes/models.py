@@ -143,13 +143,13 @@ class IngredientInRecipe(models.Model):
         Ingredient,
         on_delete=models.CASCADE,
         verbose_name='Ingredient',
-        related_name='link_of_ingridients'
+        related_name='ingridientinrecipe'
     )
     recipe = models.ForeignKey(
         Recipe,
         on_delete=models.CASCADE,
         verbose_name='Recipe',
-        related_name='link_of_ingridients'
+        related_name='ingridientinrecipe'
     )
 
     class Meta:
