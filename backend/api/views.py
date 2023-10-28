@@ -1,6 +1,5 @@
-import io
 
-from django.db.models import Q, Sum
+from django.db.models import Sum
 from django.http import HttpResponse
 from django_filters import rest_framework
 from rest_framework import permissions, status
@@ -11,11 +10,11 @@ from rest_framework.viewsets import ModelViewSet
 
 from api.filters import IngredientFilter, RecipeFilter
 from api.permissions import AuthorPermissions
-from api.serializers import (FavoriteSerializer, IngredientSerializer,
-                             RecipeCreateSerializer, RecipeSerializer,
-                             ShoppingCartSerializer, SubscribeSerializer,
-                             TagSerializer, UserPasswordSerializer,
-                             UserSerializer)
+from api.serializers import (FavoriteSerializer, IngredientInRecipe,
+                             IngredientSerializer, RecipeCreateSerializer,
+                             RecipeSerializer, ShoppingCartSerializer,
+                             SubscribeSerializer, TagSerializer,
+                             UserPasswordSerializer, UserSerializer)
 from recipes.models import Favorite, Ingredient, Recipe, ShoppingCart, Tag
 from users.models import Follow, User
 
@@ -173,27 +172,25 @@ class RecipeViewSet(ModelViewSet):
     @action(detail=False, methods=['GET'],
             permission_classes=[permissions.IsAuthenticated])
     def download_shopping_cart(self, request):
-        recipes_id = ShoppingCart.objects.filter(
-            user=request.user).values_list('recipe__pk', flat=True)
-        amounts = Recipe.objects.filter(
-            id__in=recipes_id
-        ).annotate(
-            quantity=Sum(
-                'ingredients__ingridientinrecipe__amount',
-                filter=Q(
-                    ingredients__ingridientinrecipe__recipe_id__in=recipes_id
-                )
-            )
-        ).distinct().values_list(
-            'quantity', 'ingridientinrecipe__ingredient__name',
-            'ingridientinrecipe__ingredient__measurement_unit'
+        shopping_cart = ShoppingCart.objects.filter(
+            user=self.request.user
         )
-        list = ''
-        for i in amounts:
-            list += f'{amounts[i][1]} ({amounts[i][2]}) -- {amounts[i][0]}\n'
-        text = io.BytesIO()
-        with io.TextIOWrapper(text, encoding="utf-8", write_through=True) as f:
-            f.write(list)
-            response = HttpResponse(text.getvalue(), content_type='text/plain')
-            response['Content-Disposition'] = 'attachment; filename=shop.txt'
-            return response
+        cart_list = IngredientInRecipe.objects.filter(
+            recipe__in=[item.recipe.id for item in shopping_cart]
+        ).values(
+            'ingredient'
+        ).annotate(
+            amount=Sum('amount')
+        )
+        list_text = []
+        for item in cart_list:
+            ingredient = Ingredient.objects.get(pk=item['ingredient'])
+            amount = item['amount']
+            list_text += (
+                f'{ingredient.name}, {amount}, {ingredient.measurement_unit}\n'
+            )
+        response = HttpResponse(list_text, content_type='text/plain')
+        response['Content-Disposition'] = (
+            'attachment; filename=shopping_list.txt'
+        )
+        return response
